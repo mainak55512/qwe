@@ -50,7 +50,7 @@ qwe track notes.txt
 qwe commit notes.txt "Initial notes added"
 qwe commit notes.txt "Updated with new ideas"
 qwe list notes.txt
-qwe revert notes.txt 1a2b3c4d
+qwe revert notes.txt 2
 ```
 
 ---
