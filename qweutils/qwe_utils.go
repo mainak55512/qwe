@@ -2,6 +2,7 @@ package qweutils
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -9,16 +10,22 @@ import (
 	tr "github.com/mainak55512/qwe/tracker"
 	"io/fs"
 	"os"
-	"strings"
 	"time"
 )
 
 func ConvStrEnc(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, " /@@@/ ", " %@@@% "), " @@@ ", " /@@@/ ")
+	// return strings.ReplaceAll(strings.ReplaceAll(str, " /@@@/ ", " %@@@% "), " @@@ ", " /@@@/ ")
+	return base64.StdEncoding.EncodeToString([]byte(str))
 }
 
-func ConvStrDec(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, " /@@@/ ", " @@@ "), " %@@@%", " /@@@/ ")
+func ConvStrDec(str string) (string, error) {
+	// return strings.ReplaceAll(strings.ReplaceAll(str, " /@@@/ ", " @@@ "), " %@@@%", " /@@@/ ")
+
+	dec_str, err := base64.StdEncoding.DecodeString(str)
+	if err != nil {
+		return "", fmt.Errorf("Failed to decode!")
+	}
+	return string(dec_str), nil
 }
 
 func Hasher(str string) string {
@@ -50,7 +57,7 @@ func StartTracking(filePath string) error {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}
 	fileId := Hasher(filePath)
-	fileObjectId := Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
+	fileObjectId := "_base_" + Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
 	if _, ok := tracker[fileId]; ok {
 		return fmt.Errorf("File is already being tracked")

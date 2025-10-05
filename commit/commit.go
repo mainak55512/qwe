@@ -49,10 +49,14 @@ func CommitUnit(filePath, message string) error {
 				comp := strings.Split(diff_scanner.Text(), " @@@ ")
 				line_number, _ := strconv.Atoi(comp[0])
 				if idx == line_number {
-					output += utl.ConvStrDec(comp[1]) + "\n"
+					dec_str, err := utl.ConvStrDec(comp[1])
+					if err != nil {
+						return err
+					}
+					output += dec_str + "\n"
 					diff_scanner.Scan()
 				} else {
-					output += utl.ConvStrDec(base_scanner.Text()) + "\n"
+					output += base_scanner.Text() + "\n"
 				}
 				idx++
 			}
