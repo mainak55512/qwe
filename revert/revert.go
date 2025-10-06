@@ -6,11 +6,11 @@ import (
 	"fmt"
 	utl "github.com/mainak55512/qwe/qweutils"
 	tr "github.com/mainak55512/qwe/tracker"
+	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	// "time"
 )
 
 func Revert(commitNumber int, filePath string) error {
@@ -25,8 +25,24 @@ func Revert(commitNumber int, filePath string) error {
 		if commitNumber < 0 || commitNumber > len(val.Versions) {
 			return fmt.Errorf("Not a valid commit number")
 		}
-		base_content, _ := os.ReadFile(".qwe/_object/" + val.Base)
-		err = os.WriteFile(target, base_content, 0644)
+
+		buf := make([]byte, 1024)
+		base_content, err := os.Open(".qwe/_object/" + val.Base)
+		if err != nil {
+			return err
+		}
+		defer base_content.Close()
+		target_content, err := os.Create(target)
+		if err != nil {
+			return err
+		}
+		defer target_content.Close()
+
+		_, err = io.CopyBuffer(target_content, base_content, buf)
+		if err != nil {
+			return fmt.Errorf("Copy error!")
+		}
+
 		for i, elem := range val.Versions {
 			if i > commitNumber {
 				break
@@ -42,6 +58,7 @@ func Revert(commitNumber int, filePath string) error {
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
+			defer base_file.Close()
 			base_scanner := bufio.NewScanner(base_file)
 
 			var output string
@@ -63,11 +80,21 @@ func Revert(commitNumber int, filePath string) error {
 					output += base_scanner.Text() + "\n"
 				}
 			}
-			err = os.WriteFile(target, []byte(output), 0644)
+
+			output_content, err := os.Create(target)
 			if err != nil {
-				log.Fatal("Can not write to base file")
+				return err
 			}
-			base_file.Close()
+			defer output_content.Close()
+
+			output_writer := bufio.NewWriter(output_content)
+			_, err = output_writer.WriteString(output)
+			if err != nil {
+				return fmt.Errorf("Can not write to base file")
+			}
+			if err = output_writer.Flush(); err != nil {
+				return fmt.Errorf("Output file write error")
+			}
 		}
 
 		val.Current = val.Versions[commitNumber].UID
@@ -77,8 +104,18 @@ func Revert(commitNumber int, filePath string) error {
 			return fmt.Errorf("Commit unsuccessful!")
 		}
 
-		if err = os.WriteFile(".qwe/_tracker.qwe", marshalContent, 0644); err != nil {
-			return fmt.Errorf("Commit unsuccessful!")
+		tracker_content, err := os.Create(".qwe/_tracker.qwe")
+		if err != nil {
+			return err
+		}
+		defer tracker_content.Close()
+		writer := bufio.NewWriter(tracker_content)
+		_, err = writer.Write(marshalContent)
+		if err != nil {
+			log.Fatal("Can not write to base file")
+		}
+		if err = writer.Flush(); err != nil {
+			return fmt.Errorf("Tracker file write error")
 		}
 	}
 	return nil
