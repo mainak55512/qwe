@@ -23,8 +23,9 @@ func CommitUnit(filePath, message string) error {
 	fileObjectId := utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
 	if val, ok := tracker[fileId]; ok {
+		target := ".qwe/_object/" + fileObjectId
 		base_content, _ := os.ReadFile(".qwe/_object/" + val.Base)
-		err = os.WriteFile(".qwe/_object/_base_"+fileObjectId, base_content, 0644)
+		err = os.WriteFile(target, base_content, 0644)
 		for _, elem := range val.Versions {
 			diff_file, err := os.Open(".qwe/_object/" + elem.UID)
 			if err != nil {
@@ -33,7 +34,7 @@ func CommitUnit(filePath, message string) error {
 			defer diff_file.Close()
 			diff_scanner := bufio.NewScanner(diff_file)
 
-			base_file, err := os.Open(".qwe/_object/_base_" + fileObjectId)
+			base_file, err := os.Open(target)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
@@ -60,14 +61,14 @@ func CommitUnit(filePath, message string) error {
 				}
 				idx++
 			}
-			err = os.WriteFile(".qwe/_object/_base_"+fileObjectId, []byte(output), 0644)
+			err = os.WriteFile(target, []byte(output), 0644)
 			if err != nil {
 				log.Fatal("Can not write to base file")
 			}
 			base_file.Close()
 		}
 
-		current_file, err := os.Open(".qwe/_object/_base_" + fileObjectId)
+		current_file, err := os.Open(target)
 		if err != nil {
 			log.Fatalf("Error opening file: %v", err)
 		}
@@ -92,8 +93,7 @@ func CommitUnit(filePath, message string) error {
 		}
 		diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
 		current_file.Close()
-		os.Remove(".qwe/_object/_base_" + fileObjectId)
-		err = os.WriteFile(".qwe/_object/"+fileObjectId, []byte(diff_content), 0644)
+		err = os.WriteFile(target, []byte(diff_content), 0644)
 		if err != nil {
 			return fmt.Errorf("Can not commit file!")
 		}
