@@ -1,7 +1,6 @@
 package cli
 
 import (
-	// "fmt"
 	"fmt"
 	"os"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 )
 
 func helpText() {
-	fmt.Println("Version: 0.0.1")
+	fmt.Println("Version: 0.0.2")
 	fmt.Println("Available commands:")
 	fmt.Println("qwe init")
 	fmt.Println("qwe track <file-path>")
