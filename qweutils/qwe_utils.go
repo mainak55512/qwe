@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	cp "github.com/mainak55512/qwe/compressor"
 	tr "github.com/mainak55512/qwe/tracker"
 	"io/fs"
 	"os"
@@ -70,6 +71,8 @@ func StartTracking(filePath string) error {
 	if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
 		return fmt.Errorf("Tracking unsuccessful!")
 	}
+
+	cp.CompressFile(".qwe/_object/" + fileObjectId)
 
 	tracker[fileId] = tr.Tracker{
 		Base:     fileObjectId,

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	cp "github.com/mainak55512/qwe/compressor"
 	utl "github.com/mainak55512/qwe/qweutils"
 	tr "github.com/mainak55512/qwe/tracker"
 )
@@ -27,36 +28,39 @@ func CommitUnit(filePath, message string) error {
 	if val, ok := tracker[fileId]; ok {
 		target := ".qwe/_object/" + fileObjectId
 		buf := make([]byte, 1024)
+		cp.DecompressFile(".qwe/_object/" + val.Base)
 		base_content, err := os.Open(".qwe/_object/" + val.Base)
 		if err != nil {
 			return err
 		}
-		defer base_content.Close()
-		// err = os.WriteFile(target, base_content, 0644)
 		target_content, err := os.Create(target)
 		if err != nil {
 			return err
 		}
-		defer target_content.Close()
+		// defer target_content.Close()
 
 		_, err = io.CopyBuffer(target_content, base_content, buf)
 		if err != nil {
 			return err
 		}
+		base_content.Close()
+		cp.CompressFile(".qwe/_object/" + val.Base)
+		target_content.Close()
 
 		for _, elem := range val.Versions {
+			cp.DecompressFile(".qwe/_object/" + elem.UID)
 			diff_file, err := os.Open(".qwe/_object/" + elem.UID)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
-			defer diff_file.Close()
+			// defer diff_file.Close()
 			diff_scanner := bufio.NewScanner(diff_file)
 
 			base_file, err := os.Open(target)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
-			defer base_file.Close()
+			// defer base_file.Close()
 			base_scanner := bufio.NewScanner(base_file)
 
 			var output string
@@ -80,11 +84,15 @@ func CommitUnit(filePath, message string) error {
 				}
 				idx++
 			}
+
+			diff_file.Close()
+			cp.CompressFile(".qwe/_object/" + elem.UID)
+			base_file.Close()
+
 			output_content, err := os.Create(target)
 			if err != nil {
 				return err
 			}
-			defer output_content.Close()
 
 			output_writer := bufio.NewWriter(output_content)
 			_, err = output_writer.WriteString(output)
@@ -94,13 +102,14 @@ func CommitUnit(filePath, message string) error {
 			if err = output_writer.Flush(); err != nil {
 				return fmt.Errorf("Output file write error")
 			}
+			output_content.Close()
 		}
 
 		current_file, err := os.Open(target)
 		if err != nil {
 			log.Fatalf("Error opening file: %v", err)
 		}
-		defer current_file.Close()
+		// defer current_file.Close()
 		current_scanner := bufio.NewScanner(current_file)
 
 		new_file, err := os.Open(filePath)
@@ -121,12 +130,12 @@ func CommitUnit(filePath, message string) error {
 			}
 		}
 		diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
+		current_file.Close()
 
 		output_content, err := os.Create(target)
 		if err != nil {
 			return err
 		}
-		defer output_content.Close()
 
 		output_writer := bufio.NewWriter(output_content)
 		_, err = output_writer.WriteString(diff_content)
@@ -136,6 +145,8 @@ func CommitUnit(filePath, message string) error {
 		if err = output_writer.Flush(); err != nil {
 			return fmt.Errorf("Output file write error")
 		}
+		output_content.Close()
+		cp.CompressFile(target)
 
 		val.Versions = append(val.Versions, tr.VersionDetails{
 			UID:           fileObjectId,

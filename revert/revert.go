@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	cp "github.com/mainak55512/qwe/compressor"
 	utl "github.com/mainak55512/qwe/qweutils"
 	tr "github.com/mainak55512/qwe/tracker"
 	"io"
@@ -27,38 +28,41 @@ func Revert(commitNumber int, filePath string) error {
 		}
 
 		buf := make([]byte, 1024)
+		cp.DecompressFile(".qwe/_object/" + val.Base)
 		base_content, err := os.Open(".qwe/_object/" + val.Base)
 		if err != nil {
 			return err
 		}
-		defer base_content.Close()
 		target_content, err := os.Create(target)
 		if err != nil {
 			return err
 		}
-		defer target_content.Close()
 
 		_, err = io.CopyBuffer(target_content, base_content, buf)
 		if err != nil {
 			return fmt.Errorf("Copy error!")
 		}
+		base_content.Close()
+		cp.CompressFile(".qwe/_object/" + val.Base)
+		target_content.Close()
 
 		for i, elem := range val.Versions {
 			if i > commitNumber {
 				break
 			}
+			cp.DecompressFile(".qwe/_object/" + elem.UID)
 			diff_file, err := os.Open(".qwe/_object/" + elem.UID)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
-			defer diff_file.Close()
+			// defer diff_file.Close()
 			diff_scanner := bufio.NewScanner(diff_file)
 
 			base_file, err := os.Open(target)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
 			}
-			defer base_file.Close()
+			// defer base_file.Close()
 			base_scanner := bufio.NewScanner(base_file)
 
 			var output string
@@ -81,11 +85,14 @@ func Revert(commitNumber int, filePath string) error {
 				}
 			}
 
+			diff_file.Close()
+			cp.CompressFile(".qwe/_object/" + elem.UID)
+			base_file.Close()
+
 			output_content, err := os.Create(target)
 			if err != nil {
 				return err
 			}
-			defer output_content.Close()
 
 			output_writer := bufio.NewWriter(output_content)
 			_, err = output_writer.WriteString(output)
@@ -95,6 +102,7 @@ func Revert(commitNumber int, filePath string) error {
 			if err = output_writer.Flush(); err != nil {
 				return fmt.Errorf("Output file write error")
 			}
+			output_content.Close()
 		}
 
 		val.Current = val.Versions[commitNumber].UID
