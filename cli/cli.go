@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	tw "text/tabwriter"
 
 	cm "github.com/mainak55512/qwe/commit"
 	utl "github.com/mainak55512/qwe/qweutils"
@@ -11,13 +12,18 @@ import (
 )
 
 func helpText() {
-	fmt.Println("Version: 0.1.0")
-	fmt.Println("Available commands:")
-	fmt.Println("qwe init")
-	fmt.Println("qwe track <file-path>")
-	fmt.Println("qwe list <file-path>")
-	fmt.Println("qwe commit <file-path> \"<commit message>\"")
-	fmt.Println("qwe revert <file-path> <commit-id>")
+	w := new(tw.Writer)
+	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
+	fmt.Println("Version: 0.1.1")
+	fmt.Println()
+	fmt.Println("[COMMANDS]:")
+	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
+	fmt.Fprintln(w, "qwe track <file-path>\t[Start tracking a file]")
+	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
+	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
+	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
+	fmt.Fprintln(w)
+	w.Flush()
 }
 
 func HandleArgs() error {

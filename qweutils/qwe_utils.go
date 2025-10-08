@@ -11,6 +11,7 @@ import (
 	tr "github.com/mainak55512/qwe/tracker"
 	"io/fs"
 	"os"
+	tw "text/tabwriter"
 	"time"
 )
 
@@ -42,12 +43,15 @@ func GetCommitList(filePath string) error {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}
 	fileId := Hasher(filePath)
+	w := new(tw.Writer)
+	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
 	for i, e := range tracker[fileId].Versions {
-		fmt.Println(
+		fmt.Fprintln(w,
 			fmt.Sprintf(
 				"\nID:\t%d\nCommit Message:\t%s\nTime Stamp:\t%s\n", i, e.CommitMessage, e.TimeStamp,
 			),
 		)
+		w.Flush()
 	}
 	return nil
 }
