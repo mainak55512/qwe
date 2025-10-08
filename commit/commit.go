@@ -27,6 +27,13 @@ func CommitUnit(filePath, message string) error {
 
 	if val, ok := tracker[fileId]; ok {
 		target := ".qwe/_object/" + fileObjectId
+
+		new_file, err := os.Open(filePath)
+		if err != nil {
+			return fmt.Errorf("Error opening file: %v", err)
+		}
+		defer new_file.Close()
+
 		buf := make([]byte, 1024)
 		if err = cp.DecompressFile(".qwe/_object/" + val.Base); err != nil {
 			return err
@@ -119,11 +126,6 @@ func CommitUnit(filePath, message string) error {
 		// defer current_file.Close()
 		current_scanner := bufio.NewScanner(current_file)
 
-		new_file, err := os.Open(filePath)
-		if err != nil {
-			log.Fatalf("Error opening file: %v", err)
-		}
-		defer new_file.Close()
 		new_scanner := bufio.NewScanner(new_file)
 
 		var diff_content string
