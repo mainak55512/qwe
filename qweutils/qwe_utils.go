@@ -73,7 +73,9 @@ func StartTracking(filePath string) error {
 		return fmt.Errorf("Tracking unsuccessful!")
 	}
 
-	cp.CompressFile(".qwe/_object/" + fileObjectId)
+	if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
+		return err
+	}
 
 	tracker[fileId] = tr.Tracker{
 		Base:     fileObjectId,
@@ -86,9 +88,6 @@ func StartTracking(filePath string) error {
 		return fmt.Errorf("Commit unsuccessful!")
 	}
 
-	// if err = os.WriteFile(".qwe/_tracker.qwe", marshalContent, 0644); err != nil {
-	// 	return fmt.Errorf("Commit unsuccessful!")
-	// }
 	if err = tr.SaveTracker(marshalContent); err != nil {
 		return err
 	}
@@ -121,7 +120,6 @@ func Init() error {
 			os.RemoveAll(qwePath)
 			return fmt.Errorf("Can not initiate repository!")
 		}
-		// os.WriteFile(qwePath+"/_tracker.qwe", []byte("{}"), 0644)
 		if err := tr.SaveTracker([]byte("{}")); err != nil {
 			return err
 		}

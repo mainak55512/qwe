@@ -26,7 +26,9 @@ type TrackerSchema map[string]Tracker
 
 func GetTracker() (TrackerSchema, error) {
 	var tracker_schema TrackerSchema
-	cp.DecompressFile(".qwe/_tracker.qwe")
+	if err := cp.DecompressFile(".qwe/_tracker.qwe"); err != nil {
+		return nil, err
+	}
 	file, err := os.Open(".qwe/_tracker.qwe")
 	if err != nil {
 		return nil, fmt.Errorf("Can not open tracker!")
@@ -44,7 +46,9 @@ func GetTracker() (TrackerSchema, error) {
 		}
 	}
 	file.Close()
-	cp.CompressFile(".qwe/_tracker.qwe")
+	if err = cp.CompressFile(".qwe/_tracker.qwe"); err != nil {
+		return nil, err
+	}
 	return tracker_schema, nil
 }
 
@@ -62,6 +66,8 @@ func SaveTracker(content []byte) error {
 		return fmt.Errorf("Tracker file write error")
 	}
 	tracker_content.Close()
-	cp.CompressFile(".qwe/_tracker.qwe")
+	if err = cp.CompressFile(".qwe/_tracker.qwe"); err != nil {
+		return err
+	}
 	return nil
 }

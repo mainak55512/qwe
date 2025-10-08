@@ -20,7 +20,7 @@ import (
 func CommitUnit(filePath, message string) error {
 	tracker, err := tr.GetTracker()
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
 	fileId := utl.Hasher(filePath)
 	fileObjectId := utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
@@ -39,7 +39,6 @@ func CommitUnit(filePath, message string) error {
 		if err != nil {
 			return err
 		}
-		// defer target_content.Close()
 
 		_, err = io.CopyBuffer(target_content, base_content, buf)
 		if err != nil {
@@ -47,7 +46,7 @@ func CommitUnit(filePath, message string) error {
 		}
 		base_content.Close()
 		if err = cp.CompressFile(".qwe/_object/" + val.Base); err != nil {
-			return err
+			return fmt.Errorf("Compression error")
 		}
 		target_content.Close()
 
