@@ -11,7 +11,7 @@ import (
 )
 
 func helpText() {
-	fmt.Println("Version: 0.0.2")
+	fmt.Println("Version: 0.1.0")
 	fmt.Println("Available commands:")
 	fmt.Println("qwe init")
 	fmt.Println("qwe track <file-path>")
