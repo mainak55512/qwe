@@ -28,7 +28,9 @@ func Revert(commitNumber int, filePath string) error {
 		}
 
 		buf := make([]byte, 1024)
-		cp.DecompressFile(".qwe/_object/" + val.Base)
+		if err = cp.DecompressFile(".qwe/_object/" + val.Base); err != nil {
+			return err
+		}
 		base_content, err := os.Open(".qwe/_object/" + val.Base)
 		if err != nil {
 			return err
@@ -43,14 +45,18 @@ func Revert(commitNumber int, filePath string) error {
 			return fmt.Errorf("Copy error!")
 		}
 		base_content.Close()
-		cp.CompressFile(".qwe/_object/" + val.Base)
+		if err = cp.CompressFile(".qwe/_object/" + val.Base); err != nil {
+			return err
+		}
 		target_content.Close()
 
 		for i, elem := range val.Versions {
 			if i > commitNumber {
 				break
 			}
-			cp.DecompressFile(".qwe/_object/" + elem.UID)
+			if err = cp.DecompressFile(".qwe/_object/" + elem.UID); err != nil {
+				return err
+			}
 			diff_file, err := os.Open(".qwe/_object/" + elem.UID)
 			if err != nil {
 				log.Fatalf("Error opening file: %v", err)
@@ -86,7 +92,9 @@ func Revert(commitNumber int, filePath string) error {
 			}
 
 			diff_file.Close()
-			cp.CompressFile(".qwe/_object/" + elem.UID)
+			if err = cp.CompressFile(".qwe/_object/" + elem.UID); err != nil {
+				return err
+			}
 			base_file.Close()
 
 			output_content, err := os.Create(target)
@@ -112,18 +120,8 @@ func Revert(commitNumber int, filePath string) error {
 			return fmt.Errorf("Commit unsuccessful!")
 		}
 
-		tracker_content, err := os.Create(".qwe/_tracker.qwe")
-		if err != nil {
+		if err = tr.SaveTracker(marshalContent); err != nil {
 			return err
-		}
-		defer tracker_content.Close()
-		writer := bufio.NewWriter(tracker_content)
-		_, err = writer.Write(marshalContent)
-		if err != nil {
-			log.Fatal("Can not write to base file")
-		}
-		if err = writer.Flush(); err != nil {
-			return fmt.Errorf("Tracker file write error")
 		}
 	}
 	return nil

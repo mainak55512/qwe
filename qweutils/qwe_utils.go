@@ -55,7 +55,8 @@ func GetCommitList(filePath string) error {
 func StartTracking(filePath string) error {
 	tracker, err := tr.GetTracker()
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		// return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		return err
 	}
 	fileId := Hasher(filePath)
 	fileObjectId := "_base_" + Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
@@ -85,8 +86,11 @@ func StartTracking(filePath string) error {
 		return fmt.Errorf("Commit unsuccessful!")
 	}
 
-	if err = os.WriteFile(".qwe/_tracker.qwe", marshalContent, 0644); err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+	// if err = os.WriteFile(".qwe/_tracker.qwe", marshalContent, 0644); err != nil {
+	// 	return fmt.Errorf("Commit unsuccessful!")
+	// }
+	if err = tr.SaveTracker(marshalContent); err != nil {
+		return err
 	}
 	return nil
 }
@@ -117,7 +121,10 @@ func Init() error {
 			os.RemoveAll(qwePath)
 			return fmt.Errorf("Can not initiate repository!")
 		}
-		os.WriteFile(qwePath+"/_tracker.qwe", []byte("{}"), 0644)
+		// os.WriteFile(qwePath+"/_tracker.qwe", []byte("{}"), 0644)
+		if err := tr.SaveTracker([]byte("{}")); err != nil {
+			return err
+		}
 	}
 	return nil
 }
