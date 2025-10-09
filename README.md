@@ -39,6 +39,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe list <file-path>` | List all commits for the specified file |
 | `qwe commit <file-path> "<commit message>"` | Commit changes to the file with a message |
 | `qwe revert <file-path> <commit-id>` | Revert the file to a previous version |
+| `qwe diff <file-path>` | Shows current and last committed version diff |
 
 ---
 
@@ -51,6 +52,7 @@ qwe commit notes.txt "Initial notes added"
 qwe commit notes.txt "Updated with new ideas"
 qwe list notes.txt
 qwe revert notes.txt 0
+qwe diff notes.txt
 ```
 
 ---
