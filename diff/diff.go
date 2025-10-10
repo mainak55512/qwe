@@ -2,131 +2,167 @@ package diff
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
+	tw "text/tabwriter"
+	"time"
 
-	"github.com/mainak55512/qwe/qweutils"
-	"github.com/mainak55512/qwe/tracker"
+	cp "github.com/mainak55512/qwe/compressor"
+	utl "github.com/mainak55512/qwe/qweutils"
+	tr "github.com/mainak55512/qwe/tracker"
 )
+
+type Changes struct {
+	Prev string
+	Curr string
+}
 
 // Diff shows changes between the last committed and current version of a tracked file.
 func Diff(filePath string) error {
-	trk, err := tracker.GetTracker()
+	tracker, err := tr.GetTracker()
 	if err != nil {
-		return err
+		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
+	fileId := utl.Hasher(filePath)
+	fileObjectId := utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
-	fileID := qweutils.Hasher(filePath)
-	val, ok := trk[fileID]
-	if !ok {
-		return fmt.Errorf("file %s is not tracked", filePath)
-	}
-	if len(val.Versions) == 0 {
-		return fmt.Errorf("no previous commits found for %s", filePath)
-	}
+	if val, ok := tracker[fileId]; ok {
+		target := ".qwe/_object/_diff_" + fileObjectId
 
-	// --- Reconstruct last committed version into a temp file ---
-	tmpFile, err := os.CreateTemp("", "qwe_diff_*")
-	if err != nil {
-		return fmt.Errorf("failed to create temp file: %v", err)
-	}
-	defer os.Remove(tmpFile.Name())
-	defer tmpFile.Close()
-
-	// Copy base object
-	baseFile, err := os.Open(".qwe/_object/" + val.Base)
-	if err != nil {
-		return fmt.Errorf("failed to open base object: %v", err)
-	}
-	if _, err := io.Copy(tmpFile, baseFile); err != nil {
-		return fmt.Errorf("failed to copy base: %v", err)
-	}
-	baseFile.Close()
-
-	// Apply each diff version sequentially
-	for _, version := range val.Versions {
-		diffFile, err := os.Open(".qwe/_object/" + version.UID)
+		new_file, err := os.Open(filePath)
 		if err != nil {
-			return fmt.Errorf("error opening diff file: %v", err)
+			return fmt.Errorf("Error opening file: %v", err)
 		}
+		defer new_file.Close()
 
-		// Read the current reconstructed file
-		reconstructed, err := os.ReadFile(tmpFile.Name())
+		buf := make([]byte, 1024)
+		if err = cp.DecompressFile(".qwe/_object/" + val.Base); err != nil {
+			return err
+		}
+		base_content, err := os.Open(".qwe/_object/" + val.Base)
 		if err != nil {
-			diffFile.Close()
+			return err
+		}
+		target_content, err := os.Create(target)
+		if err != nil {
 			return err
 		}
 
-		reconLines := strings.Split(string(reconstructed), "\n")
-		diffScanner := bufio.NewScanner(diffFile)
+		_, err = io.CopyBuffer(target_content, base_content, buf)
+		if err != nil {
+			return err
+		}
+		base_content.Close()
+		if err = cp.CompressFile(".qwe/_object/" + val.Base); err != nil {
+			return fmt.Errorf("Compression error")
+		}
+		target_content.Close()
 
-		var output strings.Builder
-		// Skip header lines (assuming first two are metadata)
-		diffScanner.Scan()
-		diffScanner.Scan()
-
-		lineIdx := 0
-		for diffScanner.Scan() && lineIdx < len(reconLines) {
-			line := diffScanner.Text()
-			if strings.Contains(line, "@@@") {
-				comp := strings.Split(line, "@@@")
-				decoded, _ := qweutils.ConvStrDec(comp[1])
-				output.WriteString(decoded + "\n")
-			} else {
-				output.WriteString(reconLines[lineIdx] + "\n")
+		for _, elem := range val.Versions {
+			if err = cp.DecompressFile(".qwe/_object/" + elem.UID); err != nil {
+				return err
 			}
-			lineIdx++
+			diff_file, err := os.Open(".qwe/_object/" + elem.UID)
+			if err != nil {
+				return fmt.Errorf("Error opening file: %v", err)
+			}
+			// defer diff_file.Close()
+			diff_scanner := bufio.NewScanner(diff_file)
+
+			base_file, err := os.Open(target)
+			if err != nil {
+				return fmt.Errorf("Error opening file: %v", err)
+			}
+			// defer base_file.Close()
+			base_scanner := bufio.NewScanner(base_file)
+
+			var output string
+			diff_scanner.Scan()
+			total_lines, _ := strconv.Atoi(diff_scanner.Text())
+			diff_scanner.Scan()
+			idx := 1
+			for i := 0; i < total_lines; i++ {
+				base_scanner.Scan()
+				comp := strings.Split(diff_scanner.Text(), " @@@ ")
+				line_number, _ := strconv.Atoi(comp[0])
+				if idx == line_number {
+					dec_str, err := utl.ConvStrDec(comp[1])
+					if err != nil {
+						return err
+					}
+					output += dec_str + "\n"
+					diff_scanner.Scan()
+				} else {
+					output += base_scanner.Text() + "\n"
+				}
+				idx++
+			}
+
+			diff_file.Close()
+			if err = cp.CompressFile(".qwe/_object/" + elem.UID); err != nil {
+				return err
+			}
+			base_file.Close()
+
+			output_content, err := os.Create(target)
+			if err != nil {
+				return err
+			}
+
+			output_writer := bufio.NewWriter(output_content)
+			_, err = output_writer.WriteString(output)
+			if err != nil {
+				return fmt.Errorf("Can not write to base file")
+			}
+			if err = output_writer.Flush(); err != nil {
+				return fmt.Errorf("Output file write error")
+			}
+			output_content.Close()
 		}
 
-		for ; lineIdx < len(reconLines); lineIdx++ {
-			output.WriteString(reconLines[lineIdx] + "\n")
+		current_file, err := os.Open(target)
+		if err != nil {
+			return fmt.Errorf("Error opening file: %v", err)
 		}
+		// defer current_file.Close()
+		current_scanner := bufio.NewScanner(current_file)
 
-		diffFile.Close()
-		os.WriteFile(tmpFile.Name(), []byte(output.String()), 0644)
-	}
+		new_scanner := bufio.NewScanner(new_file)
 
-	// --- Compare reconstructed (last commit) vs current file ---
-	lastCommitContent, _ := os.ReadFile(tmpFile.Name())
-	currentContent, err := os.ReadFile(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to read current file: %v", err)
-	}
+		var diff_content []Changes
 
-	lastLines := strings.Split(strings.TrimRight(string(lastCommitContent), "\n"), "\n")
-	currLines := strings.Split(strings.TrimRight(string(currentContent), "\n"), "\n")
-
-	maxOldWidth := 0
-	for _, line := range lastLines {
-		if len(line) > maxOldWidth {
-			maxOldWidth = len(line)
+		line := 0
+		for new_scanner.Scan() {
+			line++
+			current_scanner.Scan()
+			if !bytes.Equal(current_scanner.Bytes(), new_scanner.Bytes()) {
+				diff_content = append(diff_content, Changes{
+					Prev: fmt.Sprintf("- %d %s", line, current_scanner.Text()),
+					Curr: fmt.Sprintf("+ %d %s", line, new_scanner.Text()),
+				})
+			}
+		}
+		// diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
+		current_file.Close()
+		os.Remove(target)
+		if len(diff_content) == 0 {
+			fmt.Println("No Change!")
+		} else {
+			w := new(tw.Writer)
+			w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
+			fmt.Printf("===Start Diff view===\n\n")
+			fmt.Fprintln(w, "Previous\t\tCurrent")
+			fmt.Fprintln(w, "--------\t\t-------")
+			for _, elem := range diff_content {
+				fmt.Fprintf(w, "%s  \t\t%s\n", elem.Prev, elem.Curr)
+			}
+			w.Flush()
+			fmt.Printf("\n===End of Diff===")
 		}
 	}
-
-	fmt.Printf("\n=== Diff View for %s ===\n\n", filePath)
-	fmt.Printf("%-*s | %s\n", maxOldWidth, "Last Commit", "Current File")
-	fmt.Printf("%s-+-%s\n", strings.Repeat("-", maxOldWidth), strings.Repeat("-", 50))
-
-	maxLines := len(lastLines)
-	if len(currLines) > maxLines {
-		maxLines = len(currLines)
-	}
-
-	for i := 0; i < maxLines; i++ {
-		var oldLine, newLine string
-		if i < len(lastLines) {
-			oldLine = lastLines[i]
-		}
-		if i < len(currLines) {
-			newLine = currLines[i]
-		}
-		fmt.Printf("%-*s | %s\n", maxOldWidth, oldLine, newLine)
-	}
-
-	fmt.Printf("\n%s\n", strings.Repeat("-", maxOldWidth+55))
-	fmt.Println("End of Diff")
-
 	return nil
 }

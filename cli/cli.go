@@ -7,7 +7,7 @@ import (
 	tw "text/tabwriter"
 
 	cm "github.com/mainak55512/qwe/commit"
-	// "github.com/mainak55512/qwe/diff"
+	"github.com/mainak55512/qwe/diff"
 	utl "github.com/mainak55512/qwe/qweutils"
 	rv "github.com/mainak55512/qwe/revert"
 )
@@ -86,13 +86,12 @@ func HandleArgs() error {
 			}
 		case "diff":
 			{
-				// if len(command_list) != 2 {
-				// 	return fmt.Errorf("diff command accepts filename as argument")
-				// }
-				// if err := diff.Diff(command_list[1]); err != nil {
-				// 	return err
-				// }
-				helpText()
+				if len(command_list) != 2 {
+					return fmt.Errorf("diff command accepts filename as argument")
+				}
+				if err := diff.Diff(command_list[1]); err != nil {
+					return err
+				}
 			}
 		default:
 			{
