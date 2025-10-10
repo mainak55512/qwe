@@ -39,7 +39,9 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe list <file-path>` | List all commits for the specified file |
 | `qwe commit <file-path> "<commit message>"` | Commit changes to the file with a message |
 | `qwe revert <file-path> <commit-id>` | Revert the file to a previous version |
-| `qwe diff <file-path>` | Shows current and last committed version diff |
+| `qwe diff <file-path>` | Shows latest uncommitted and last committed version diff |
+| `qwe diff <file-path> <commit_id_1> <commit_id_2>` | Shows version diff of commit_id_1 & commit_id_2|
+| `qwe diff <file-path> uncommitted <commit_id>` | Shows version diff of latest uncommitted version and commit_id version|
 
 ---
 

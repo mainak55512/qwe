@@ -15,7 +15,7 @@ import (
 func helpText() {
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: 0.1.1")
+	fmt.Println("Version: 0.1.2")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -23,6 +23,9 @@ func helpText() {
 	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
 	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
+	fmt.Fprintln(w, "qwe diff <file-path>\t[Shows difference between latest uncommitted version and latest committed version]")
+	fmt.Fprintln(w, "qwe diff <file-path> <commit-id-1> <commit-id-2>\t[Shows difference between two commits]")
+	fmt.Fprintln(w, "qwe diff <file-path> uncommitted <commit-id>\t[Shows difference between latest uncommitted version and commit-id version]")
 	fmt.Fprintln(w)
 	w.Flush()
 }
@@ -86,11 +89,16 @@ func HandleArgs() error {
 			}
 		case "diff":
 			{
-				if len(command_list) != 2 {
-					return fmt.Errorf("diff command accepts filename as argument")
-				}
-				if err := diff.Diff(command_list[1]); err != nil {
-					return err
+				if len(command_list) != 2 && len(command_list) != 4 {
+					return fmt.Errorf("diff command accepts filename and two commit ids as argument")
+				} else if len(command_list) == 4 {
+					if err := diff.Diff(command_list[1], command_list[2], command_list[3]); err != nil {
+						return err
+					}
+				} else {
+					if err := diff.Diff(command_list[1], "", ""); err != nil {
+						return err
+					}
 				}
 			}
 		default:
