@@ -97,6 +97,7 @@ func StartTracking(filePath string) error {
 	if err = tr.SaveTracker(marshalContent); err != nil {
 		return err
 	}
+	fmt.Println("Started tracking", filePath)
 	return nil
 }
 
@@ -157,5 +158,6 @@ func Init() error {
 			return err
 		}
 	}
+	fmt.Println("QWE initiated")
 	return nil
 }

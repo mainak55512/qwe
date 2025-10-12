@@ -43,5 +43,6 @@ func Revert(commitNumber int, filePath string) error {
 			return err
 		}
 	}
+	fmt.Println("Successfully reverted back to commit", commitNumber)
 	return nil
 }

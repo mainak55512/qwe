@@ -96,5 +96,6 @@ func CommitUnit(filePath, message string) error {
 		return err
 	}
 
+	fmt.Println("Committed successfully")
 	return nil
 }

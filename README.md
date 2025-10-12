@@ -1,20 +1,20 @@
-# 🥝 qwe — A Lightweight File-Level Version/Revision Control System
+# qwe — A Lightweight File-Level Version/Revision Control System
 
 **qwe** (pronounced *kiwi*) is a simple yet powerful version/revision control system that tracks **individual files**, not entire projects.  
 Unlike Git, which manages repositories as a whole, qwe provides a more granular approach — perfect for quick file-level tracking, experimentation, or standalone scripts.
 
 ---
 
-## 🚀 Features
+## Features
 
-- 📁 **File-based version control** — track versions of specific files independently.  
-- 💾 **Easy commits** — record changes with a simple commit message.  
-- 🔙 **Revert anytime** — roll back a single file without affecting others.  
-- 🧾 **Simple and fast** — minimal setup, no complex repository management.
+- **File-based version control** — track versions of specific files independently.  
+- **Easy commits** — record changes with a simple commit message.  
+- **Revert anytime** — roll back a single file without affecting others.  
+- **Simple and fast** — minimal setup, no complex repository management.
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 You can install **qwe** in two ways:
 
@@ -30,7 +30,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 
 ---
 
-## 🧰 Commands
+## Commands
 
 | Command | Description |
 |----------|-------------|
@@ -47,7 +47,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 
 ---
 
-## 💡 Example Usage
+## Example Usage
 
 ```bash
 qwe init
@@ -64,7 +64,7 @@ qwe rebase notes.txt
 
 ---
 
-## 🧩 Why qwe?
+## Why qwe?
 
 - Ideal for **independent file tracking** without setting up a full Git repo.  
 - Great for **scripts, configs, notes, or documents**.  
@@ -72,7 +72,7 @@ qwe rebase notes.txt
 
 ---
 
-## 🏗️ Future Plans
+## Future Plans
 
 - ~Add diff support to compare file versions~
 - Enable remote file sync  
@@ -80,6 +80,6 @@ qwe rebase notes.txt
 
 ---
 
-## 📜 License
+## License
 
 MIT License © 2025
