@@ -36,6 +36,10 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 	}
 	target_content.Close()
 
+	if commitID == -2 {
+		return nil
+	}
+
 	for i, elem := range val.Versions {
 		if commitID != -1 && i > commitID {
 			break

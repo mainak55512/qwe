@@ -1,6 +1,6 @@
-# 🥝 qwe — A Lightweight File-Level Version Control System
+# 🥝 qwe — A Lightweight File-Level Version/Revision Control System
 
-**qwe** (pronounced *kiwi*) is a simple yet powerful version control system that tracks **individual files**, not entire projects.  
+**qwe** (pronounced *kiwi*) is a simple yet powerful version/revision control system that tracks **individual files**, not entire projects.  
 Unlike Git, which manages repositories as a whole, qwe provides a more granular approach — perfect for quick file-level tracking, experimentation, or standalone scripts.
 
 ---
@@ -39,6 +39,8 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe list <file-path>` | List all commits for the specified file |
 | `qwe commit <file-path> "<commit message>"` | Commit changes to the file with a message |
 | `qwe revert <file-path> <commit-id>` | Revert the file to a previous version |
+| `qwe current <file-path>` | Shows current commit details of the specified file |
+| `qwe rebase <file-path>` | Revert file to its base version |
 | `qwe diff <file-path>` | Shows latest uncommitted and last committed version diff |
 | `qwe diff <file-path> <commit_id_1> <commit_id_2>` | Shows version diff of commit_id_1 & commit_id_2|
 | `qwe diff <file-path> uncommitted <commit_id>` | Shows version diff of latest uncommitted version and commit_id version|
@@ -50,11 +52,14 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 ```bash
 qwe init
 qwe track notes.txt
-qwe commit notes.txt "Initial notes added"
-qwe commit notes.txt "Updated with new ideas"
+qwe commit notes.txt "Initial notes added" // -> commitID 0
+qwe commit notes.txt "Updated with new ideas" // -> commitID 1
+qwe commit notes.txt "Removed already executed ideas" // -> commitID 2
 qwe list notes.txt
-qwe revert notes.txt 0
+qwe revert notes.txt 1
+qwe current notes.txt
 qwe diff notes.txt
+qwe rebase notes.txt
 ```
 
 ---
@@ -69,7 +74,7 @@ qwe diff notes.txt
 
 ## 🏗️ Future Plans
 
-- Add diff support to compare file versions  
+- ~Add diff support to compare file versions~
 - Enable remote file sync  
 - Provide optional GUI interface  
 

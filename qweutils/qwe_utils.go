@@ -7,12 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	cp "github.com/mainak55512/qwe/compressor"
-	tr "github.com/mainak55512/qwe/tracker"
 	"io/fs"
 	"os"
+	"strings"
 	tw "text/tabwriter"
 	"time"
+
+	cp "github.com/mainak55512/qwe/compressor"
+	tr "github.com/mainak55512/qwe/tracker"
 )
 
 func ConvStrEnc(str string) string {
@@ -95,6 +97,33 @@ func StartTracking(filePath string) error {
 	if err = tr.SaveTracker(marshalContent); err != nil {
 		return err
 	}
+	return nil
+}
+
+func CurrentCommit(filePath string) error {
+	tracker, err := tr.GetTracker()
+	if err != nil {
+		return err
+	}
+	fileId := Hasher(filePath)
+	val, ok := tracker[fileId]
+	if !ok {
+		return fmt.Errorf("File is not tracked!")
+	}
+	currentVersion := val.Current
+	w := new(tw.Writer)
+	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
+	if strings.HasPrefix(currentVersion, "_base_") {
+		fmt.Fprintf(w, "\nCurrent Commit ID:\tbase\nCommit Message:\tBase version\n")
+	} else {
+		for i, e := range tracker[fileId].Versions {
+			if e.UID == currentVersion {
+				fmt.Fprintf(w, "\nCurrent Commit ID:\t%d\nCommit Message:\t%s\n", i, e.CommitMessage)
+				break
+			}
+		}
+	}
+	w.Flush()
 	return nil
 }
 
