@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// Compresses the file with zlib
 func CompressFile(filePath string) error {
 	var buf bytes.Buffer
 	file, err := os.Open(filePath)
@@ -21,6 +22,8 @@ func CompressFile(filePath string) error {
 		return fmt.Errorf("Can not initialize compression buffer")
 	}
 	defer zw.Close()
+
+	// Copy file content to the buffer as well as compressing it
 	if _, err = io.Copy(zw, file); err != nil {
 		return fmt.Errorf("Can not copy to compression buffer")
 	}
@@ -30,12 +33,15 @@ func CompressFile(filePath string) error {
 		return fmt.Errorf("Can not create compressed file")
 	}
 	defer com_file.Close()
+
+	// Copy compressed content from buffer to the file
 	if _, err = io.Copy(com_file, &buf); err != nil {
 		return fmt.Errorf("Can not copy to compressed file")
 	}
 	return nil
 }
 
+// decompresses the file using a temporary one
 func DecompressFile(filePath string) error {
 	input, err := os.Open(filePath)
 	if err != nil {
@@ -43,6 +49,7 @@ func DecompressFile(filePath string) error {
 	}
 	defer input.Close()
 
+	// Create zlib reader for the file
 	zr, err := zlib.NewReader(input)
 	if err != nil {
 		return fmt.Errorf("cannot initialize decompressor: %w", err)
@@ -57,11 +64,13 @@ func DecompressFile(filePath string) error {
 
 	defer output.Close()
 
+	// Decompress and copy content from zlib reader to temporary file
 	if _, err = io.Copy(output, zr); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
 		os.Remove(tmpPath)
 		return fmt.Errorf("cannot copy decompressed data: %w", err)
 	}
 
+	// Rename temporary file with the actual output file name
 	if err = os.Rename(tmpPath, filePath); err != nil {
 		return fmt.Errorf("cannot rename decompressed file: %w", err)
 	}

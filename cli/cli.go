@@ -13,6 +13,9 @@ import (
 	rv "github.com/mainak55512/qwe/revert"
 )
 
+/*
+Version details and available commands
+*/
 func helpText() {
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
@@ -33,6 +36,9 @@ func helpText() {
 	w.Flush()
 }
 
+/*
+Handles command line arguments like init, track, commit, revert etc.
+*/
 func HandleArgs() error {
 	command_list := os.Args[1:]
 

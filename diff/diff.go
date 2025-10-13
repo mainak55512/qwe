@@ -19,21 +19,28 @@ type Changes struct {
 }
 
 func Diff(filePath, commitID1Str, commitID2Str string) error {
+
+	// Only allow if both are either empty or non-empty
 	if !((commitID1Str == "") == (commitID2Str == "")) {
 		return fmt.Errorf("Argument number missmatch")
 	}
+
+	// Get details from _tracker.qwe
 	tracker, err := tr.GetTracker()
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
+
 	fileId := utl.Hasher(filePath)
 	fileObjectId := utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
+	// Check if file is being tracked
 	val, ok := tracker[fileId]
 	if !ok {
 		return fmt.Errorf("File is not tracked!")
 	}
 
+	// Will run if no commit id is passed or both commit id is passed and first one is 'uncommitted'
 	if (commitID1Str == "" && commitID2Str == "") || commitID1Str == "uncommitted" {
 
 		target := ".qwe/_object/_diff_" + fileObjectId
@@ -43,14 +50,20 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 			if err != nil {
 				return err
 			}
+
+			// Reconstruct till the specified commit id
 			if err = res.Reconstruct(val, target, commitID); err != nil {
 				return err
 			}
 		} else {
+			// Reconstruct till the current version
 			if err = res.Reconstruct(val, target, -1); err != nil {
 				return err
 			}
 		}
+
+		// As commitID1Str is either empty or 'uncommitted', need to compare uncommited changes of the file
+		// with the latest committed version or with the version specified by the commitID2Str
 		new_file, err := os.Open(filePath)
 		if err != nil {
 			return fmt.Errorf("Error opening file: %v", err)
@@ -68,6 +81,7 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 
 		var diff_content []Changes
 
+		// Check the differences
 		line := 0
 		for new_scanner.Scan() {
 			line++
@@ -93,6 +107,8 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 			fmt.Printf("\n===End of Diff===")
 		}
 	} else {
+
+		// This part will execute if both commitIDs are supplied through the command line
 		var commit1, commit2 int
 		if commitID1Str != "" {
 			commit1, err = strconv.Atoi(commitID1Str)
@@ -109,9 +125,12 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 		src := ".qwe/_object/_diff_src_" + fileObjectId
 		dest := ".qwe/_object/_diff_dest_" + fileObjectId
 
+		// reconstruct till first commitID
 		if err = res.Reconstruct(val, src, commit1); err != nil {
 			return err
 		}
+
+		// Reconstruct till second commitID
 		if err = res.Reconstruct(val, dest, commit2); err != nil {
 			return err
 		}
@@ -132,6 +151,7 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 
 		var diff_content []Changes
 
+		// Compare for changes
 		line := 0
 		for new_scanner.Scan() {
 			line++
@@ -145,8 +165,11 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 		}
 		// diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
 		current_file.Close()
+
+		// Remove temporary files
 		os.Remove(src)
 		os.Remove(dest)
+
 		if len(diff_content) == 0 {
 			fmt.Println("No Change!")
 		} else {
