@@ -1,4 +1,4 @@
-# Contributing to stto
+# Contributing to qwe
 
 First off, thank you for considering contributing to qwe! 🎉 We appreciate your interest and effort in improving our project.
 
