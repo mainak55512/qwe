@@ -1,3 +1,4 @@
+![Alt text](./assets/qwe.png)
 # qwe — A Lightweight File-Level Version/Revision Control System
 
 **qwe** (pronounced *kiwi*) is a simple yet powerful version/revision control system that tracks **individual files**, not entire projects.  
