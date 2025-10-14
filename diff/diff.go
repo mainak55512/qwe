@@ -18,6 +18,7 @@ type Changes struct {
 	Curr string
 }
 
+// Determines the difference between two version of the file
 func Diff(filePath, commitID1Str, commitID2Str string) error {
 
 	// Only allow if both are either empty or non-empty

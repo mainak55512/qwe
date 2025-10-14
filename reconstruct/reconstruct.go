@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+// Applies previous commits till the commitID supplied on to the base version
 func Reconstruct(val tr.Tracker, target string, commitID int) error {
 	buf := make([]byte, 1024)
 

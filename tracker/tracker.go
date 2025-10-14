@@ -61,6 +61,7 @@ func GetTracker() (TrackerSchema, error) {
 	return tracker_schema, nil
 }
 
+// Updates _tracker.qwe file
 func SaveTracker(content []byte) error {
 
 	// Truncate the tracker file

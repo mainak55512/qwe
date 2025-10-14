@@ -15,6 +15,7 @@ import (
 	tr "github.com/mainak55512/qwe/tracker"
 )
 
+// Tracks the difference of the uncommitted file
 func CommitUnit(filePath, message string) error {
 
 	// Get tracking details from _tracker.qwe
