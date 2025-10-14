@@ -38,6 +38,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 
 | Command | Description |
 |----------|-------------|
+| `qwe` | Shows all the available commands |
 | `qwe init` | Initialize qwe in the current directory |
 | `qwe track <file-path>` | Start tracking a file |
 | `qwe list <file-path>` | List all commits for the specified file |
