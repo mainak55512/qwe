@@ -42,5 +42,6 @@ func Rebase(filePath string) error {
 	if err = tr.SaveTracker(marshalContent); err != nil {
 		return err
 	}
+	fmt.Println("Successfully reverted back to base version")
 	return nil
 }
