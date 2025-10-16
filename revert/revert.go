@@ -11,6 +11,11 @@ import (
 // Reverts the file to a specific version
 func Revert(commitNumber int, filePath string) error {
 
+	// Check if the file is present before reverting
+	if exists := utl.FileExists(filePath); !exists {
+		return fmt.Errorf("Invalid file path")
+	}
+
 	// Get tracker details
 	tracker, err := tr.GetTracker()
 	if err != nil {

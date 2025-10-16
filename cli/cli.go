@@ -10,6 +10,7 @@ import (
 	"github.com/mainak55512/qwe/diff"
 	utl "github.com/mainak55512/qwe/qweutils"
 	rb "github.com/mainak55512/qwe/rebase"
+	rc "github.com/mainak55512/qwe/recover"
 	rv "github.com/mainak55512/qwe/revert"
 )
 
@@ -45,7 +46,7 @@ func helpText() {
 	)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: 0.1.4")
+	fmt.Println("Version: 0.1.6 - nightly")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -54,6 +55,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
 	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
 	fmt.Fprintln(w, "qwe current <file-path>\t[Get current commit details of the file]")
+	fmt.Fprintln(w, "qwe recover <file-path>\t[Restore deleted file if earlier tracked]")
 	fmt.Fprintln(w, "qwe rebase <file-path>\t[Revert back to base version of the file]")
 	fmt.Fprintln(w, "qwe diff <file-path>\t[Shows difference between latest uncommitted version and latest committed version]")
 	fmt.Fprintln(w, "qwe diff <file-path> <commit-id-1> <commit-id-2>\t[Shows difference between two commits]")
@@ -142,6 +144,15 @@ func HandleArgs() error {
 					return fmt.Errorf("current command accepts one argument")
 				}
 				if err := utl.CurrentCommit(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "recover":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("recover command accepts one argument")
+				}
+				if err := rc.Recover(command_list[1]); err != nil {
 					return err
 				}
 			}
