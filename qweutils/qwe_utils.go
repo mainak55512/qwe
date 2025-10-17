@@ -159,18 +159,30 @@ func CurrentCommit(filePath string) error {
 }
 
 // Checks if a folder exists
-func exists(path string) (bool, error) {
+func FolderExists(path string) bool {
 	info, err := os.Stat(path)
 	if err == nil {
 		if info.IsDir() {
-			return true, nil
+			return true
 		}
-		return false, nil
+		return false
 	}
 	if errors.Is(err, fs.ErrNotExist) {
-		return false, nil
+		return false
 	}
-	return false, err
+	return false
+}
+
+// Check if a file exists
+func FileExists(filePath string) bool {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return true
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return false
 }
 
 // Initiates qwe repository
@@ -178,7 +190,7 @@ func Init() error {
 	qwePath := ".qwe"
 
 	// Check if qwe is already initialized
-	if exists, _ := exists(qwePath); exists {
+	if exists := FolderExists(qwePath); exists {
 		return fmt.Errorf("Repository already initiated!")
 	} else {
 

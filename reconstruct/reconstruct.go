@@ -52,7 +52,7 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 	// Loop through the file versions and apply the changes to the base varient one by one
 	for i, elem := range val.Versions {
 
-		// Will stop if the specified commitID is reached
+		// Will stop if the specified commitID is reached; -1 means it will cover all versions
 		if commitID != -1 && i > commitID {
 			break
 		}
