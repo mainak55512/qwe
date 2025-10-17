@@ -30,6 +30,8 @@ func CommitUnit(filePath, message string) error {
 	// hash from file name and current time, will be used later as the file name of the commit
 	fileObjectId := utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
+	var commitID int
+
 	// Check if file is tracked
 	if val, ok := tracker[fileId]; ok {
 		target := ".qwe/_object/" + fileObjectId
@@ -103,6 +105,8 @@ func CommitUnit(filePath, message string) error {
 		val.Current = fileObjectId
 		tracker[fileId] = val
 
+		commitID = len(val.Versions) - 1
+
 	} else {
 		return fmt.Errorf("File is not tracked: %s", filePath)
 	}
@@ -117,6 +121,6 @@ func CommitUnit(filePath, message string) error {
 		return err
 	}
 
-	fmt.Println("Committed successfully")
+	fmt.Println("Committed successfully with commit id", commitID)
 	return nil
 }
