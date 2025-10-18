@@ -19,7 +19,7 @@ import (
 func CommitUnit(filePath, message string) error {
 
 	// Get tracking details from _tracker.qwe
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
@@ -117,7 +117,7 @@ func CommitUnit(filePath, message string) error {
 		return fmt.Errorf("Commit unsuccessful!")
 	}
 
-	if err = tr.SaveTracker(marshalContent); err != nil {
+	if err = tr.SaveTracker(0, marshalContent); err != nil {
 		return err
 	}
 

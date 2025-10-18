@@ -17,7 +17,7 @@ func Revert(commitNumber int, filePath string) error {
 	}
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}
@@ -46,7 +46,7 @@ func Revert(commitNumber int, filePath string) error {
 		}
 
 		// Update the tracker
-		if err = tr.SaveTracker(marshalContent); err != nil {
+		if err = tr.SaveTracker(0, marshalContent); err != nil {
 			return err
 		}
 	}

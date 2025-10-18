@@ -43,7 +43,7 @@ func Hasher(str string) string {
 func GetCommitList(filePath string) error {
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}
@@ -69,7 +69,7 @@ func GetCommitList(filePath string) error {
 func StartTracking(filePath string) error {
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func StartTracking(filePath string) error {
 	}
 
 	// Update the tracker
-	if err = tr.SaveTracker(marshalContent); err != nil {
+	if err = tr.SaveTracker(0, marshalContent); err != nil {
 		return err
 	}
 	fmt.Println("Started tracking", filePath)
@@ -123,7 +123,7 @@ func StartTracking(filePath string) error {
 func CurrentCommit(filePath string) error {
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return err
 	}
@@ -203,8 +203,17 @@ func Init() error {
 			os.RemoveAll(qwePath)
 			return fmt.Errorf("Can not initiate repository!")
 		}
+		// Create _group_tracker.qwe file
+		if _, err := os.Create(qwePath + "/_group_tracker.qwe"); err != nil {
+			os.RemoveAll(qwePath)
+			return fmt.Errorf("Can not initiate repository!")
+		}
 		// Initialize the tracker with '{}'
-		if err := tr.SaveTracker([]byte("{}")); err != nil {
+		if err := tr.SaveTracker(0, []byte("{}")); err != nil {
+			return err
+		}
+		// Initialize the group tracker with '{}'
+		if err := tr.SaveTracker(1, []byte("{}")); err != nil {
 			return err
 		}
 	}

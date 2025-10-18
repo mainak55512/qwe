@@ -15,7 +15,7 @@ func Recover(filePath string) error {
 	}
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}

@@ -27,7 +27,7 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 	}
 
 	// Get details from _tracker.qwe
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}

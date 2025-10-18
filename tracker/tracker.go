@@ -22,50 +22,91 @@ type Tracker struct {
 	Versions []VersionDetails `json:"versions"`
 }
 
+type GroupVersionDetails struct {
+	UID           string            `json:"uid"`
+	CommitMessage string            `json:"commit_message"`
+	Files         map[string]string `json:"files"`
+}
+
+type GroupTracker struct {
+	Current  string                `json:"current"`
+	Versions []GroupVersionDetails `json:"versions"`
+}
+
 type TrackerSchema map[string]Tracker
+type GroupTrackerSchema map[string]Tracker
 
-// Returns the tracker details from _tracker.qwe
-func GetTracker() (TrackerSchema, error) {
+// Returns the tracker details from _tracker.qwe or _group_tracker.qwe
+func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 	var tracker_schema TrackerSchema
+	var group_tracker_schema GroupTrackerSchema
 
-	// Decompress _tracker.qwe
-	if err := cp.DecompressFile(".qwe/_tracker.qwe"); err != nil {
-		return nil, err
+	var trackerPath string
+
+	if trackerType == 0 {
+		trackerPath = ".qwe/_tracker.qwe"
+	} else if trackerType == 1 {
+		trackerPath = ".qwe/_group_tracker.qwe"
+	} else {
+		return nil, nil, fmt.Errorf("Invalid Tracker type!")
 	}
 
-	file, err := os.Open(".qwe/_tracker.qwe")
+	// Decompress _tracker.qwe
+	if err := cp.DecompressFile(trackerPath); err != nil {
+		return nil, nil, err
+	}
+
+	file, err := os.Open(trackerPath)
 	if err != nil {
-		return nil, fmt.Errorf("Can not open tracker!")
+		return nil, nil, fmt.Errorf("Can not open tracker!")
 	}
 
 	reader := bufio.NewReader(file)
 	current_tracker, err := io.ReadAll(reader)
 	if err != nil {
 		file.Close()
-		return nil, fmt.Errorf("Can not access tracker!")
+		return nil, nil, fmt.Errorf("Can not access tracker!")
 	} else {
 
-		// Parse the content of the tracker file
-		if err := json.Unmarshal(current_tracker, &tracker_schema); err != nil {
-			file.Close()
-			cp.CompressFile(".qwe/_tracker.qwe")
-			return nil, fmt.Errorf("Can not parse tracker!")
+		if trackerType == 0 {
+			// Parse the content of the tracker file
+			if err := json.Unmarshal(current_tracker, &tracker_schema); err != nil {
+				file.Close()
+				cp.CompressFile(trackerPath)
+				return nil, nil, fmt.Errorf("Can not parse tracker!")
+			}
+		} else {
+			// Parse the content of the tracker file
+			if err := json.Unmarshal(current_tracker, &group_tracker_schema); err != nil {
+				file.Close()
+				cp.CompressFile(trackerPath)
+				return nil, nil, fmt.Errorf("Can not parse tracker!")
+			}
 		}
 	}
 	file.Close()
 
 	// Compress the tracker
-	if err = cp.CompressFile(".qwe/_tracker.qwe"); err != nil {
-		return nil, err
+	if err = cp.CompressFile(trackerPath); err != nil {
+		return nil, nil, err
 	}
-	return tracker_schema, nil
+	return tracker_schema, group_tracker_schema, nil
 }
 
 // Updates _tracker.qwe file
-func SaveTracker(content []byte) error {
+func SaveTracker(trackerType int, content []byte) error {
+
+	var trackerPath string
+	if trackerType == 0 {
+		trackerPath = ".qwe/_tracker.qwe"
+	} else if trackerType == 1 {
+		trackerPath = ".qwe/_group_tracker.qwe"
+	} else {
+		return fmt.Errorf("Invalid Tracker type!")
+	}
 
 	// Truncate the tracker file
-	tracker_content, err := os.Create(".qwe/_tracker.qwe")
+	tracker_content, err := os.Create(trackerPath)
 	if err != nil {
 		return err
 	}
@@ -82,7 +123,7 @@ func SaveTracker(content []byte) error {
 	tracker_content.Close()
 
 	// Compress the tracker file
-	if err = cp.CompressFile(".qwe/_tracker.qwe"); err != nil {
+	if err = cp.CompressFile(trackerPath); err != nil {
 		return err
 	}
 	return nil
