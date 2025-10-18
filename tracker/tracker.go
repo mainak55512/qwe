@@ -23,18 +23,18 @@ type Tracker struct {
 }
 
 type GroupVersionDetails struct {
-	UID           string            `json:"uid"`
 	CommitMessage string            `json:"commit_message"`
 	Files         map[string]string `json:"files"`
 }
 
 type GroupTracker struct {
-	Current  string                `json:"current"`
-	Versions []GroupVersionDetails `json:"versions"`
+	GroupName string                         `json:"group_name"`
+	Current   string                         `json:"current"`
+	Versions  map[string]GroupVersionDetails `json:"versions"`
 }
 
 type TrackerSchema map[string]Tracker
-type GroupTrackerSchema map[string]Tracker
+type GroupTrackerSchema map[string]GroupTracker
 
 // Returns the tracker details from _tracker.qwe or _group_tracker.qwe
 func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {

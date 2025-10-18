@@ -66,12 +66,12 @@ func GetCommitList(filePath string) error {
 }
 
 // Creates an entry for the file in Tracker and generates a base varient of the file
-func StartTracking(filePath string) error {
+func StartTracking(filePath string) (string, error) {
 
 	// Get tracker details
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	fileId := Hasher(filePath)
@@ -81,22 +81,22 @@ func StartTracking(filePath string) error {
 
 	// If the file is already tracked then return error
 	if _, ok := tracker[fileId]; ok {
-		return fmt.Errorf("File is already being tracked")
+		return "", fmt.Errorf("File is already being tracked")
 	}
 
 	base_content, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("File not found: %s", filePath)
+		return "", fmt.Errorf("File not found: %s", filePath)
 	}
 
 	// (Need to change to a buffered writer) write the content of the file to the base varient
 	if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
-		return fmt.Errorf("Tracking unsuccessful!")
+		return "", fmt.Errorf("Tracking unsuccessful!")
 	}
 
 	// Compress the base file
 	if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
-		return err
+		return fileObjectId, err
 	}
 
 	// Add tracker entry for the file
@@ -108,14 +108,66 @@ func StartTracking(filePath string) error {
 
 	marshalContent, err := json.MarshalIndent(tracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return fileObjectId, fmt.Errorf("Commit unsuccessful!")
 	}
 
 	// Update the tracker
 	if err = tr.SaveTracker(0, marshalContent); err != nil {
-		return err
+		return fileObjectId, err
 	}
 	fmt.Println("Started tracking", filePath)
+	return fileObjectId, nil
+}
+
+func StartGroupTracking(groupName, filePath string) error {
+
+	// Get tracker details
+	tracker, _, err := tr.GetTracker(0)
+	if err != nil {
+		return err
+	}
+
+	// Get tracker details
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	fileId := Hasher(filePath)
+	groupId := Hasher(groupName)
+
+	// If the file is already tracked then return error
+	f, ok := tracker[fileId]
+	if ok {
+		val, ok := groupTracker[groupId]
+		if !ok {
+			return fmt.Errorf("Invalid group!")
+		}
+		val.Versions[val.Current].Files[fileId] = f.Current
+		fmt.Printf("%v\n", val)
+		groupTracker[groupId] = val
+	} else {
+		fileObjectId, err := StartTracking(filePath)
+		if err != nil {
+			return err
+		}
+		val, ok := groupTracker[groupId]
+		if !ok {
+			return fmt.Errorf("Invalid group!")
+		}
+		val.Versions[val.Current].Files[fileId] = fileObjectId
+		fmt.Printf("%v\n", val)
+		groupTracker[groupId] = val
+	}
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = tr.SaveTracker(1, marshalContent); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -218,5 +270,44 @@ func Init() error {
 		}
 	}
 	fmt.Println("QWE initiated")
+	return nil
+}
+
+func GroupInit(groupName string) error {
+	qwePath := ".qwe"
+	if exists := FolderExists(qwePath); !exists {
+		return fmt.Errorf("No qwe repository found!")
+	}
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+	groupID := Hasher(groupName)
+	groupObjectId := "_group_" + Hasher(fmt.Sprintf("%s%d", groupName, time.Now().UnixNano()))
+
+	if _, ok := groupTracker[groupID]; ok {
+		return fmt.Errorf("Group is already being tracked!")
+	}
+	groupTracker[groupID] = tr.GroupTracker{
+		GroupName: groupName,
+		Current:   groupObjectId,
+		Versions: map[string]tr.GroupVersionDetails{
+			groupObjectId: {
+				CommitMessage: "Initial Tracking",
+				Files:         make(map[string]string),
+			},
+		},
+	}
+
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = tr.SaveTracker(1, marshalContent); err != nil {
+		return err
+	}
+	fmt.Println("Started tracking group ", groupName)
 	return nil
 }

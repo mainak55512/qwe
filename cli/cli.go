@@ -78,9 +78,18 @@ func HandleArgs() error {
 		case "init":
 			{
 				if len(command_list) != 1 {
-					return fmt.Errorf("Init command doesn't take any argument")
+					return fmt.Errorf("init command doesn't take any argument")
 				}
 				if err := utl.Init(); err != nil {
+					return err
+				}
+			}
+		case "group-init":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("group-init command takes one argument")
+				}
+				if err := utl.GroupInit(command_list[1]); err != nil {
 					return err
 				}
 			}
@@ -89,7 +98,16 @@ func HandleArgs() error {
 				if len(command_list) != 2 {
 					return fmt.Errorf("Track command accepts one argument")
 				}
-				if err := utl.StartTracking(command_list[1]); err != nil {
+				if _, err := utl.StartTracking(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-track":
+			{
+				if len(command_list) != 3 {
+					return fmt.Errorf("Track command accepts two argument")
+				}
+				if err := utl.StartGroupTracking(command_list[1], command_list[2]); err != nil {
 					return err
 				}
 			}
