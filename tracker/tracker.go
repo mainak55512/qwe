@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	cp "github.com/mainak55512/qwe/compressor"
+	utl "github.com/mainak55512/qwe/qweutils"
 	"io"
 	"os"
-
-	cp "github.com/mainak55512/qwe/compressor"
+	"time"
 )
 
 type VersionDetails struct {
@@ -22,15 +23,21 @@ type Tracker struct {
 	Versions []VersionDetails `json:"versions"`
 }
 
+type FileDetails struct {
+	FileName  string `json:"file_name"`
+	FileObjID string `json:"file_obj_id"`
+}
+
 type GroupVersionDetails struct {
-	CommitMessage string            `json:"commit_message"`
-	Files         map[string]string `json:"files"`
+	CommitMessage string                 `json:"commit_message"`
+	Files         map[string]FileDetails `json:"files"`
 }
 
 type GroupTracker struct {
-	GroupName string                         `json:"group_name"`
-	Current   string                         `json:"current"`
-	Versions  map[string]GroupVersionDetails `json:"versions"`
+	GroupName    string                         `json:"group_name"`
+	Current      string                         `json:"current"`
+	VersionOrder []string                       `json:"version_order"`
+	Versions     map[string]GroupVersionDetails `json:"versions"`
 }
 
 type TrackerSchema map[string]Tracker
@@ -124,6 +131,120 @@ func SaveTracker(trackerType int, content []byte) error {
 
 	// Compress the tracker file
 	if err = cp.CompressFile(trackerPath); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Creates an entry for the file in Tracker and generates a base varient of the file
+func StartTracking(filePath string) (string, error) {
+
+	// Get tracker details
+	tracker, _, err := GetTracker(0)
+	if err != nil {
+		return "", err
+	}
+
+	fileId := utl.Hasher(filePath)
+
+	// This will be used as the name of the base file
+	fileObjectId := "_base_" + utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
+
+	// If the file is already tracked then return error
+	if _, ok := tracker[fileId]; ok {
+		return "", fmt.Errorf("File is already being tracked")
+	}
+
+	base_content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("File not found: %s", filePath)
+	}
+
+	// (Need to change to a buffered writer) write the content of the file to the base varient
+	if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
+		return "", fmt.Errorf("Tracking unsuccessful!")
+	}
+
+	// Compress the base file
+	if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
+		return fileObjectId, err
+	}
+
+	// Add tracker entry for the file
+	tracker[fileId] = Tracker{
+		Base:     fileObjectId,
+		Current:  fileObjectId,
+		Versions: []VersionDetails{},
+	}
+
+	marshalContent, err := json.MarshalIndent(tracker, "", " ")
+	if err != nil {
+		return fileObjectId, fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = SaveTracker(0, marshalContent); err != nil {
+		return fileObjectId, err
+	}
+	fmt.Println("Started tracking", filePath)
+	return fileObjectId, nil
+}
+
+func StartGroupTracking(groupName, filePath string) error {
+
+	// Get tracker details
+	tracker, _, err := GetTracker(0)
+	if err != nil {
+		return err
+	}
+
+	// Get tracker details
+	_, groupTracker, err := GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	fileId := utl.Hasher(filePath)
+	groupId := utl.Hasher(groupName)
+
+	// If the file is already tracked then return error
+	f, ok := tracker[fileId]
+	if ok {
+		val, ok := groupTracker[groupId]
+		if !ok {
+			return fmt.Errorf("Invalid group!")
+		}
+		_, ok = val.Versions[val.Current].Files[fileId]
+		if ok {
+			return fmt.Errorf("File %s is already tracked in group %s", filePath, groupName)
+		}
+		val.Versions[val.Current].Files[fileId] = FileDetails{
+			FileName:  filePath,
+			FileObjID: f.Current,
+		}
+		groupTracker[groupId] = val
+	} else {
+		fileObjectId, err := StartTracking(filePath)
+		if err != nil {
+			return err
+		}
+		val, ok := groupTracker[groupId]
+		if !ok {
+			return fmt.Errorf("Invalid group!")
+		}
+		val.Versions[val.Current].Files[fileId] = FileDetails{
+			FileName:  filePath,
+			FileObjID: fileObjectId,
+		}
+		groupTracker[groupId] = val
+	}
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = SaveTracker(1, marshalContent); err != nil {
 		return err
 	}
 	return nil
