@@ -8,7 +8,6 @@
 **qwe** (pronounced *kiwi*) makes version control effortless.
 Track individual files with precision, group them seamlessly, and commit or revert changes individually or together — all in one lightweight, intuitive tool built for speed and simplicity.
 
----
 
 ## Features
 
@@ -18,7 +17,6 @@ Track individual files with precision, group them seamlessly, and commit or reve
 - **Grouped snapshot** — Track multiple files with ease for collective commit and revert.
 - **Simple and fast** — minimal setup, no complex repository management.
 
----
 
 ## Installation
 
@@ -34,7 +32,6 @@ Make sure your Go environment’s `GOPATH/bin` is added to your system `PATH`.
 ### 2️⃣ Using Prebuilt Executables
 Download the prebuilt binary for your platform from the **[Releases](https://github.com/mainak55512/qwe/releases)** section of this repository and add it to your PATH.
 
----
 
 ## Commands
 
@@ -58,7 +55,6 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe diff <file-path> <commit_id_1> <commit_id_2>` | Shows version diff of commit_id_1 & commit_id_2|
 | `qwe diff <file-path> uncommitted <commit_id>` | Shows version diff of latest uncommitted version and commit_id version|
 
----
 
 ## Example Usage
 
@@ -89,7 +85,6 @@ qwe group-list new_group
 qwe revert notes.txt 0
 qwe group-current new_group
 ```
----
 
 ## Why qwe?
 
@@ -98,19 +93,16 @@ qwe group-current new_group
 - Great for **scripts, configs, notes, or documents**.  
 - Simple CLI interface — no branching or merging headaches.
 
----
 
 ## Code of Conduct
 
 Check out code of conduct for `qwe` [here](./CODE_OF_CONDUCT.md).
 
----
 
 ## Contributions
 
 Contributions are welcome. Please have a look at the [contribution guidelines](./CONTRIBUTING.md) for `qwe` before contributing.
 
----
 
 ## License
 
