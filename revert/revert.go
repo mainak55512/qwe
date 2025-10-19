@@ -53,3 +53,35 @@ func Revert(commitNumber int, filePath string) error {
 	fmt.Println("Successfully reverted back to commit", commitNumber)
 	return nil
 }
+
+func RevertGroup(groupName string, commitID int) error {
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	groupID := utl.Hasher(groupName)
+
+	val, ok := groupTracker[groupID]
+	if !ok {
+		return fmt.Errorf("Invalid group!")
+	}
+	files := val.Versions[val.VersionOrder[commitID]].Files
+	for k := range files {
+		if err := Revert(files[k].CommitNumber, files[k].FileName); err != nil {
+			return err
+		}
+	}
+	val.Current = val.VersionOrder[commitID]
+	groupTracker[groupID] = val
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = tr.SaveTracker(1, marshalContent); err != nil {
+		return err
+	}
+	return nil
+}

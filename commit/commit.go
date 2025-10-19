@@ -18,12 +18,12 @@ import (
 )
 
 // Tracks the difference of the uncommitted file
-func CommitUnit(filePath, message string) (string, error) {
+func CommitUnit(filePath, message string) (string, int, error) {
 
 	// Get tracking details from _tracker.qwe
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return "", fmt.Errorf("Can not retrieve Tracker, err: %s", err)
+		return "", -3, fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
 
 	// Create hash of file name, it will be used later to retrive file details from tracker
@@ -41,14 +41,14 @@ func CommitUnit(filePath, message string) (string, error) {
 		// This is the latest version of uncommitted file changes
 		new_file, err := os.Open(filePath)
 		if err != nil {
-			return "", fmt.Errorf("Error opening file: %v", err)
+			return "", -3, fmt.Errorf("Error opening file: %v", err)
 		}
 		defer new_file.Close()
 
 		// Reconstruct the file to the latest committed version
 		// by applying all the changes to the base version
 		if err = res.Reconstruct(val, target, -1); err != nil {
-			return "", err
+			return "", -3, err
 		}
 
 		current_file, err := os.Open(target)
@@ -80,22 +80,22 @@ func CommitUnit(filePath, message string) (string, error) {
 
 		output_content, err := os.Create(target)
 		if err != nil {
-			return "", err
+			return "", -3, err
 		}
 
 		output_writer := bufio.NewWriter(output_content)
 		_, err = output_writer.WriteString(diff_content)
 		if err != nil {
-			return "", fmt.Errorf("Can not write to base file")
+			return "", -3, fmt.Errorf("Can not write to base file")
 		}
 		if err = output_writer.Flush(); err != nil {
-			return "", fmt.Errorf("Output file write error")
+			return "", -3, fmt.Errorf("Output file write error")
 		}
 		output_content.Close()
 
 		// Compressing the commit file
 		if err = cp.CompressFile(target); err != nil {
-			return "", err
+			return "", -3, err
 		}
 
 		// Update tracker
@@ -110,21 +110,21 @@ func CommitUnit(filePath, message string) (string, error) {
 		commitID = len(val.Versions) - 1
 
 	} else {
-		return "", fmt.Errorf("File is not tracked: %s", filePath)
+		return "", -3, fmt.Errorf("File is not tracked: %s", filePath)
 	}
 
 	// Save the updated tracker in _tracker.qwe
 	marshalContent, err := json.MarshalIndent(tracker, "", " ")
 	if err != nil {
-		return "", fmt.Errorf("Commit unsuccessful!")
+		return "", -3, fmt.Errorf("Commit unsuccessful!")
 	}
 
 	if err = tr.SaveTracker(0, marshalContent); err != nil {
-		return "", err
+		return "", -3, err
 	}
 
 	fmt.Println("Committed", filePath, " successfully with commit id", commitID)
-	return fileObjectId, nil
+	return fileObjectId, commitID, nil
 }
 
 func CommitGroup(groupName, commitMessage string) error {
@@ -147,13 +147,14 @@ func CommitGroup(groupName, commitMessage string) error {
 	newFiles := make(map[string]tr.FileDetails)
 
 	for k := range current.Files {
-		fileObjectID, err := CommitUnit(current.Files[k].FileName, commitMessage)
+		fileObjectID, commitID, err := CommitUnit(current.Files[k].FileName, commitMessage)
 		if err != nil {
 			return err
 		}
 		newFiles[k] = tr.FileDetails{
-			FileName:  current.Files[k].FileName,
-			FileObjID: fileObjectID,
+			FileName:     current.Files[k].FileName,
+			CommitNumber: commitID,
+			FileObjID:    fileObjectID,
 		}
 	}
 
@@ -224,6 +225,7 @@ func GetGroupCommitList(groupName string) error {
 		fmt.Fprintln(w, fmt.Sprintf("\nID:\t%d\nCommit Message:\t%s\n", i, gr.Versions[k].CommitMessage))
 		i++
 	}
+	w.Flush()
 	return nil
 }
 

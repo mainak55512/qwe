@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	cp "github.com/mainak55512/qwe/compressor"
-	utl "github.com/mainak55512/qwe/qweutils"
 	"io"
 	"os"
+	"strings"
 	"time"
+
+	cp "github.com/mainak55512/qwe/compressor"
+	utl "github.com/mainak55512/qwe/qweutils"
 )
 
 type VersionDetails struct {
@@ -24,8 +26,9 @@ type Tracker struct {
 }
 
 type FileDetails struct {
-	FileName  string `json:"file_name"`
-	FileObjID string `json:"file_obj_id"`
+	FileName     string `json:"file_name"`
+	CommitNumber int    `json:"commit_number"`
+	FileObjID    string `json:"file_obj_id"`
 }
 
 type GroupVersionDetails struct {
@@ -218,9 +221,21 @@ func StartGroupTracking(groupName, filePath string) error {
 		if ok {
 			return fmt.Errorf("File %s is already tracked in group %s", filePath, groupName)
 		}
+		var commitNumber int
+		if strings.HasPrefix(f.Current, "_base_") {
+			commitNumber = -2
+		} else {
+			for i, elem := range f.Versions {
+				if elem.UID == f.Current {
+					commitNumber = i
+					break
+				}
+			}
+		}
 		val.Versions[val.Current].Files[fileId] = FileDetails{
-			FileName:  filePath,
-			FileObjID: f.Current,
+			FileName:     filePath,
+			CommitNumber: commitNumber,
+			FileObjID:    f.Current,
 		}
 		groupTracker[groupId] = val
 	} else {
@@ -233,8 +248,9 @@ func StartGroupTracking(groupName, filePath string) error {
 			return fmt.Errorf("Invalid group!")
 		}
 		val.Versions[val.Current].Files[fileId] = FileDetails{
-			FileName:  filePath,
-			FileObjID: fileObjectId,
+			FileName:     filePath,
+			CommitNumber: -2,
+			FileObjID:    fileObjectId,
 		}
 		groupTracker[groupId] = val
 	}

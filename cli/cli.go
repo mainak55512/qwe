@@ -117,7 +117,7 @@ func HandleArgs() error {
 				if len(command_list) != 3 {
 					return fmt.Errorf("Commit command accepts two arguments")
 				}
-				if _, err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
+				if _, _, err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
 					return err
 				}
 			}
@@ -158,6 +158,19 @@ func HandleArgs() error {
 					return fmt.Errorf("Not a valid commit number")
 				}
 				if err := rv.Revert(commitNumber, command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-revert":
+			{
+				if len(command_list) != 3 {
+					return fmt.Errorf("Revert command accepts two arguments")
+				}
+				commitNumber, err := strconv.Atoi(command_list[2])
+				if err != nil {
+					return fmt.Errorf("Not a valid commit number")
+				}
+				if err := rv.RevertGroup(command_list[1], commitNumber); err != nil {
 					return err
 				}
 			}
