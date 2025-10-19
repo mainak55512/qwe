@@ -82,7 +82,7 @@ qwe group-track new_group README.md
 qwe group-commit new_group "Initial commit" // -> commitID 0
 qwe group-commit new_group "Updated commit" // -> commitID 1
 qwe group-list new_group
-qwe revert notes.txt 0
+qwe group-revert new_group 0
 qwe group-current new_group
 ```
 
