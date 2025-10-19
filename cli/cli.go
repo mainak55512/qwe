@@ -8,10 +8,11 @@ import (
 
 	cm "github.com/mainak55512/qwe/commit"
 	"github.com/mainak55512/qwe/diff"
-	utl "github.com/mainak55512/qwe/qweutils"
+	in "github.com/mainak55512/qwe/initializer"
 	rb "github.com/mainak55512/qwe/rebase"
 	rc "github.com/mainak55512/qwe/recover"
 	rv "github.com/mainak55512/qwe/revert"
+	tr "github.com/mainak55512/qwe/tracker"
 )
 
 /*
@@ -46,15 +47,21 @@ func helpText() {
 	)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.1.6")
+	fmt.Println("Version: v0.2.0")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
+	fmt.Fprintln(w, "qwe group-init <group name>\t[Initialize a group to track multiple files]")
 	fmt.Fprintln(w, "qwe track <file-path>\t[Start tracking a file]")
+	fmt.Fprintln(w, "qwe group-track <group name> <file-path>\t[Start tracking a file in a group]")
 	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
+	fmt.Fprintln(w, "qwe group-list <group name>\t[Get list of all commits on the group]")
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
+	fmt.Fprintln(w, "qwe group-commit <group name> \"<commit message>\"\t[Commit current version of all the files tracked in the group]")
 	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
+	fmt.Fprintln(w, "qwe group-revert <group name> <commit-id>\t[Revert all the files tracked in the group to a previous version]")
 	fmt.Fprintln(w, "qwe current <file-path>\t[Get current commit details of the file]")
+	fmt.Fprintln(w, "qwe group-current <group name>\t[Get current commit details of the group]")
 	fmt.Fprintln(w, "qwe recover <file-path>\t[Restore deleted file if earlier tracked]")
 	fmt.Fprintln(w, "qwe rebase <file-path>\t[Revert back to base version of the file]")
 	fmt.Fprintln(w, "qwe diff <file-path>\t[Shows difference between latest uncommitted version and latest committed version]")
@@ -78,9 +85,18 @@ func HandleArgs() error {
 		case "init":
 			{
 				if len(command_list) != 1 {
-					return fmt.Errorf("Init command doesn't take any argument")
+					return fmt.Errorf("init command doesn't take any argument")
 				}
-				if err := utl.Init(); err != nil {
+				if err := in.Init(); err != nil {
+					return err
+				}
+			}
+		case "group-init":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("group-init command takes one argument")
+				}
+				if err := in.GroupInit(command_list[1]); err != nil {
 					return err
 				}
 			}
@@ -89,7 +105,16 @@ func HandleArgs() error {
 				if len(command_list) != 2 {
 					return fmt.Errorf("Track command accepts one argument")
 				}
-				if err := utl.StartTracking(command_list[1]); err != nil {
+				if _, err := tr.StartTracking(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-track":
+			{
+				if len(command_list) != 3 {
+					return fmt.Errorf("Track command accepts two argument")
+				}
+				if err := tr.StartGroupTracking(command_list[1], command_list[2]); err != nil {
 					return err
 				}
 			}
@@ -98,7 +123,16 @@ func HandleArgs() error {
 				if len(command_list) != 3 {
 					return fmt.Errorf("Commit command accepts two arguments")
 				}
-				if err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
+				if _, _, err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
+					return err
+				}
+			}
+		case "group-commit":
+			{
+				if len(command_list) != 3 {
+					return fmt.Errorf("group-commit command accepts two arguments")
+				}
+				if err := cm.CommitGroup(command_list[1], command_list[2]); err != nil {
 					return err
 				}
 			}
@@ -107,7 +141,16 @@ func HandleArgs() error {
 				if len(command_list) != 2 {
 					return fmt.Errorf("List command accepts one argument")
 				}
-				if err := utl.GetCommitList(command_list[1]); err != nil {
+				if err := cm.GetCommitList(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-list":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("group-list command accepts one argument")
+				}
+				if err := cm.GetGroupCommitList(command_list[1]); err != nil {
 					return err
 				}
 			}
@@ -121,6 +164,19 @@ func HandleArgs() error {
 					return fmt.Errorf("Not a valid commit number")
 				}
 				if err := rv.Revert(commitNumber, command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-revert":
+			{
+				if len(command_list) != 3 {
+					return fmt.Errorf("Revert command accepts two arguments")
+				}
+				commitNumber, err := strconv.Atoi(command_list[2])
+				if err != nil {
+					return fmt.Errorf("Not a valid commit number")
+				}
+				if err := rv.RevertGroup(command_list[1], commitNumber); err != nil {
 					return err
 				}
 			}
@@ -143,7 +199,16 @@ func HandleArgs() error {
 				if len(command_list) != 2 {
 					return fmt.Errorf("current command accepts one argument")
 				}
-				if err := utl.CurrentCommit(command_list[1]); err != nil {
+				if err := cm.CurrentCommit(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "group-current":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("group-current command accepts one argument")
+				}
+				if err := cm.CurrentGroupCommit(command_list[1]); err != nil {
 					return err
 				}
 			}

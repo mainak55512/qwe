@@ -12,7 +12,7 @@ import (
 func Rebase(filePath string) error {
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
 	}
@@ -39,9 +39,9 @@ func Rebase(filePath string) error {
 	}
 
 	// Update the tracker
-	if err = tr.SaveTracker(marshalContent); err != nil {
+	if err = tr.SaveTracker(0, marshalContent); err != nil {
 		return err
 	}
-	fmt.Println("Successfully reverted back to base version")
+	fmt.Println("Successfully reverted", filePath, "back to base version")
 	return nil
 }

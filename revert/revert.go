@@ -3,7 +3,9 @@ package revert
 import (
 	"encoding/json"
 	"fmt"
+
 	utl "github.com/mainak55512/qwe/qweutils"
+	rb "github.com/mainak55512/qwe/rebase"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
 )
@@ -17,7 +19,7 @@ func Revert(commitNumber int, filePath string) error {
 	}
 
 	// Get tracker details
-	tracker, err := tr.GetTracker()
+	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
 		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
 	}
@@ -46,10 +48,50 @@ func Revert(commitNumber int, filePath string) error {
 		}
 
 		// Update the tracker
-		if err = tr.SaveTracker(marshalContent); err != nil {
+		if err = tr.SaveTracker(0, marshalContent); err != nil {
 			return err
 		}
 	}
-	fmt.Println("Successfully reverted back to commit", commitNumber)
+	fmt.Println("Successfully reverted", filePath, " back to commit", commitNumber)
+	return nil
+}
+
+func RevertGroup(groupName string, commitID int) error {
+
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	groupID := utl.Hasher(groupName)
+
+	val, ok := groupTracker[groupID]
+	if !ok {
+		return fmt.Errorf("Invalid group!")
+	}
+	files := val.Versions[val.VersionOrder[commitID]].Files
+	for k := range files {
+		commitNumber := files[k].CommitNumber
+		if commitNumber >= 0 {
+			if err := Revert(commitNumber, files[k].FileName); err != nil {
+				return err
+			}
+		} else if commitNumber == -2 {
+			if err := rb.Rebase(files[k].FileName); err != nil {
+				return err
+			}
+		}
+	}
+	val.Current = val.VersionOrder[commitID]
+	groupTracker[groupID] = val
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return fmt.Errorf("Commit unsuccessful!")
+	}
+
+	// Update the tracker
+	if err = tr.SaveTracker(1, marshalContent); err != nil {
+		return err
+	}
 	return nil
 }
