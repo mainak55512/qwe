@@ -2,7 +2,8 @@
   <img src="./assets/qwe.png" alt="qwe Logo">
 </div>
 
-# qwe (kiwi) — lightweight. flexible. file-first. Track files individually, group commits effortlessly, and version smarter.
+# qwe (kiwi) - lightweight, flexible, file-first
+
 
 **qwe** (pronounced *kiwi*) makes version control effortless.
 Track individual files with precision, group them seamlessly, and commit or revert changes individually or together — all in one lightweight, intuitive tool built for speed and simplicity.
