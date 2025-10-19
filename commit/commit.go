@@ -267,3 +267,30 @@ func CurrentCommit(filePath string) error {
 	w.Flush()
 	return nil
 }
+
+func CurrentGroupCommit(groupName string) error {
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	groupID := utl.Hasher(groupName)
+
+	val, ok := groupTracker[groupID]
+	if !ok {
+		return fmt.Errorf("Invalid group!")
+	}
+	var commitID int
+	for i, e := range val.VersionOrder {
+		if e == val.Current {
+			commitID = i
+			break
+		}
+	}
+
+	w := new(tw.Writer)
+	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
+	fmt.Fprintf(w, "\nCurrent Commit ID:\t%d\nCommit Message:\t%s\n", commitID, val.Versions[val.Current].CommitMessage)
+	w.Flush()
+	return nil
+}

@@ -3,7 +3,9 @@ package revert
 import (
 	"encoding/json"
 	"fmt"
+
 	utl "github.com/mainak55512/qwe/qweutils"
+	rb "github.com/mainak55512/qwe/rebase"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
 )
@@ -50,11 +52,12 @@ func Revert(commitNumber int, filePath string) error {
 			return err
 		}
 	}
-	fmt.Println("Successfully reverted back to commit", commitNumber)
+	fmt.Println("Successfully reverted", filePath, " back to commit", commitNumber)
 	return nil
 }
 
 func RevertGroup(groupName string, commitID int) error {
+
 	_, groupTracker, err := tr.GetTracker(1)
 	if err != nil {
 		return err
@@ -68,8 +71,15 @@ func RevertGroup(groupName string, commitID int) error {
 	}
 	files := val.Versions[val.VersionOrder[commitID]].Files
 	for k := range files {
-		if err := Revert(files[k].CommitNumber, files[k].FileName); err != nil {
-			return err
+		commitNumber := files[k].CommitNumber
+		if commitNumber >= 0 {
+			if err := Revert(commitNumber, files[k].FileName); err != nil {
+				return err
+			}
+		} else if commitNumber == -2 {
+			if err := rb.Rebase(files[k].FileName); err != nil {
+				return err
+			}
 		}
 	}
 	val.Current = val.VersionOrder[commitID]

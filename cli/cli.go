@@ -197,6 +197,15 @@ func HandleArgs() error {
 					return err
 				}
 			}
+		case "group-current":
+			{
+				if len(command_list) != 2 {
+					return fmt.Errorf("group-current command accepts one argument")
+				}
+				if err := cm.CurrentGroupCommit(command_list[1]); err != nil {
+					return err
+				}
+			}
 		case "recover":
 			{
 				if len(command_list) != 2 {
