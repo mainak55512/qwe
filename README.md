@@ -17,6 +17,28 @@ Track individual files with precision, group them seamlessly, and commit or reve
 - **Grouped snapshot** — Track multiple files with ease for collective commit and revert.
 - **Simple and fast** — minimal setup, no complex repository management.
 
+## How does it work?
+
+`qwe` allows you to track individual files separately or bundle related files into a single, named snapshot for easy tracking and rollback.
+
+**Group Creation:** Create a logical group (e.g., "Project X Assets," "Configuration Files") that contains multiple individual files.
+
+**Unified Tracking:** When you take a snapshot of the group, qwe captures the current state of all files within it. This makes rolling back a set of related changes incredibly simple.
+
+<div align="center">
+  <img src="./assets/qwe-diagram.png" alt="qwe diagram Logo">
+</div>
+
+A key design choice in qwe is the persistence of file-level tracking, even within a group. This gives you unparalleled flexibility.
+
+Example: Imagine you are tracking files A, B, and C in a group called "Feature-A." You still have the freedom to commit an independent revision for file A alone without affecting the group's snapshot history for B and C.
+
+This means you can:
+
+- Maintain a clean, unified history for all files in the group (the Group Snapshot).
+- Still perform granular, single-file rollbacks or commits outside the group's scope.
+
+This approach ensures that qwe remains the flexible, non-intrusive file revision system that you can rely on.
 
 ## Installation
 
