@@ -56,8 +56,10 @@ func Revert(commitNumber int, filePath string) error {
 	return nil
 }
 
+// Revert a group to any specific version
 func RevertGroup(groupName string, commitID int) error {
 
+	// Get group tracker
 	_, groupTracker, err := tr.GetTracker(1)
 	if err != nil {
 		return err
@@ -65,25 +67,35 @@ func RevertGroup(groupName string, commitID int) error {
 
 	groupID := utl.Hasher(groupName)
 
+	// Check if valid group
 	val, ok := groupTracker[groupID]
 	if !ok {
 		return fmt.Errorf("Invalid group!")
 	}
+
+	// Get all the file details of that specific version
 	files := val.Versions[val.VersionOrder[commitID]].Files
+
 	for k := range files {
 		commitNumber := files[k].CommitNumber
-		if commitNumber >= 0 {
+
+		if commitNumber >= 0 { // commit number +ve means normal tracked file
 			if err := Revert(commitNumber, files[k].FileName); err != nil {
 				return err
 			}
-		} else if commitNumber == -2 {
+		} else if commitNumber == -2 { // commit number -2 means file is just tracked in qwe, no other commits are present, hence need to revert to base version
 			if err := rb.Rebase(files[k].FileName); err != nil {
 				return err
 			}
 		}
 	}
+
+	// Update current version with newly checked out version
 	val.Current = val.VersionOrder[commitID]
+
+	// Update group tracker with new values
 	groupTracker[groupID] = val
+
 	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
 	if err != nil {
 		return fmt.Errorf("Commit unsuccessful!")
