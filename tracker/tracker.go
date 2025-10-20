@@ -53,6 +53,7 @@ func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 
 	var trackerPath string
 
+	// 0 is associated with file tracker, 1 is associated with group tracker
 	if trackerType == 0 {
 		trackerPath = ".qwe/_tracker.qwe"
 	} else if trackerType == 1 {
@@ -107,6 +108,8 @@ func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 func SaveTracker(trackerType int, content []byte) error {
 
 	var trackerPath string
+
+	// 0 is associated with file tracker, 1 is associated with group tracker
 	if trackerType == 0 {
 		trackerPath = ".qwe/_tracker.qwe"
 	} else if trackerType == 1 {
@@ -193,6 +196,7 @@ func StartTracking(filePath string) (string, error) {
 	return fileObjectId, nil
 }
 
+// Start tracking a file in a group
 func StartGroupTracking(groupName, filePath string) error {
 
 	// Get tracker details
@@ -210,9 +214,8 @@ func StartGroupTracking(groupName, filePath string) error {
 	fileId := utl.Hasher(filePath)
 	groupId := utl.Hasher(groupName)
 
-	// If the file is already tracked then return error
 	f, ok := tracker[fileId]
-	if ok {
+	if ok { // If the file is already tracked, get the current version and update the group tracker
 		val, ok := groupTracker[groupId]
 		if !ok {
 			return fmt.Errorf("Invalid group!")
@@ -222,8 +225,10 @@ func StartGroupTracking(groupName, filePath string) error {
 			return fmt.Errorf("File %s is already tracked in group %s", filePath, groupName)
 		}
 		var commitNumber int
+
+		// if current version of the file is a base file
 		if strings.HasPrefix(f.Current, "_base_") {
-			commitNumber = -2
+			commitNumber = -2 // means for revert we need to revert back to base version
 		} else {
 			for i, elem := range f.Versions {
 				if elem.UID == f.Current {
@@ -238,7 +243,7 @@ func StartGroupTracking(groupName, filePath string) error {
 			FileObjID:    f.Current,
 		}
 		groupTracker[groupId] = val
-	} else {
+	} else { // If file is not tracked, then track the file first
 		fileObjectId, err := StartTracking(filePath)
 		if err != nil {
 			return err
@@ -247,6 +252,8 @@ func StartGroupTracking(groupName, filePath string) error {
 		if !ok {
 			return fmt.Errorf("Invalid group!")
 		}
+
+		// As the file is first time tracked, the commit id is set to -2, that indicates, in case of revert, need to revert back to base version
 		val.Versions[val.Current].Files[fileId] = FileDetails{
 			FileName:     filePath,
 			CommitNumber: -2,

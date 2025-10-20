@@ -45,21 +45,30 @@ func Init() error {
 	return nil
 }
 
+// Initiate a group in a qwe repository
 func GroupInit(groupName string) error {
+
 	qwePath := ".qwe"
+
 	if exists := utl.FolderExists(qwePath); !exists {
 		return fmt.Errorf("No qwe repository found!")
 	}
+
+	// Get group tracker
 	_, groupTracker, err := tr.GetTracker(1)
 	if err != nil {
 		return err
 	}
+
 	groupID := utl.Hasher(groupName)
 	groupObjectId := "_group_" + utl.Hasher(fmt.Sprintf("%s%d", groupName, time.Now().UnixNano()))
 
+	// Check if group is already tracked
 	if _, ok := groupTracker[groupID]; ok {
 		return fmt.Errorf("Group is already being tracked!")
 	}
+
+	// Instantiate a logical group in the group tracker
 	groupTracker[groupID] = tr.GroupTracker{
 		GroupName:    groupName,
 		Current:      groupObjectId,

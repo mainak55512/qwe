@@ -7,6 +7,7 @@ import (
 	tr "github.com/mainak55512/qwe/tracker"
 )
 
+// Restores a deleted file if it was earlier tracked by qwe
 func Recover(filePath string) error {
 
 	// Check if the file is present before recovering
