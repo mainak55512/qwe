@@ -30,7 +30,7 @@ func Revert(commitNumber int, filePath string) error {
 		target := filePath
 
 		// Check if the commit number is valid
-		if commitNumber < 0 || commitNumber > len(val.Versions) {
+		if commitNumber < -1 || commitNumber > len(val.Versions)-1 {
 			return fmt.Errorf("Not a valid commit number")
 		}
 
@@ -40,6 +40,10 @@ func Revert(commitNumber int, filePath string) error {
 		}
 
 		// Update the current version of the file in tracker
+		// if commitID is -1 that means reverted back to latest commit
+		if commitNumber == -1 {
+			commitNumber = len(val.Versions) - 1
+		}
 		val.Current = val.Versions[commitNumber].UID
 		tracker[fileId] = val
 		marshalContent, err := json.MarshalIndent(tracker, "", " ")

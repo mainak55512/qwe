@@ -47,7 +47,7 @@ func helpText() {
 	)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.2.0")
+	fmt.Println("Version: v0.2.0 - 1")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -58,6 +58,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe group-list <group name>\t[Get list of all commits on the group]")
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
 	fmt.Fprintln(w, "qwe group-commit <group name> \"<commit message>\"\t[Commit current version of all the files tracked in the group]")
+	fmt.Fprintln(w, "qwe revert <file-path>\t[Revert the file to the last committed version]")
 	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
 	fmt.Fprintln(w, "qwe group-revert <group name> <commit-id>\t[Revert all the files tracked in the group to a previous version]")
 	fmt.Fprintln(w, "qwe current <file-path>\t[Get current commit details of the file]")
@@ -156,12 +157,18 @@ func HandleArgs() error {
 			}
 		case "revert":
 			{
-				if len(command_list) != 3 {
-					return fmt.Errorf("Revert command accepts two arguments")
+				if len(command_list) != 3 && len(command_list) != 2 {
+					return fmt.Errorf("Revert command accepts atmost two arguments")
 				}
-				commitNumber, err := strconv.Atoi(command_list[2])
-				if err != nil {
-					return fmt.Errorf("Not a valid commit number")
+				var commitNumber int
+				var err error
+				if len(command_list) == 3 {
+					commitNumber, err = strconv.Atoi(command_list[2])
+					if err != nil {
+						return fmt.Errorf("Not a valid commit number")
+					}
+				} else {
+					commitNumber = -1
 				}
 				if err := rv.Revert(commitNumber, command_list[1]); err != nil {
 					return err
