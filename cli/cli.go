@@ -9,6 +9,7 @@ import (
 	cm "github.com/mainak55512/qwe/commit"
 	"github.com/mainak55512/qwe/diff"
 	in "github.com/mainak55512/qwe/initializer"
+	er "github.com/mainak55512/qwe/qwerror"
 	rb "github.com/mainak55512/qwe/rebase"
 	rc "github.com/mainak55512/qwe/recover"
 	rv "github.com/mainak55512/qwe/revert"
@@ -67,7 +68,7 @@ func helpText() {
 		`)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.2.0 - 1")
+	fmt.Println("Version: v0.2.1")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -185,7 +186,7 @@ func HandleArgs() error {
 				if len(command_list) == 3 {
 					commitNumber, err = strconv.Atoi(command_list[2])
 					if err != nil {
-						return fmt.Errorf("Not a valid commit number")
+						return er.InvalidCommitNo
 					}
 				} else {
 					commitNumber = -1
@@ -201,7 +202,7 @@ func HandleArgs() error {
 				}
 				commitNumber, err := strconv.Atoi(command_list[2])
 				if err != nil {
-					return fmt.Errorf("Not a valid commit number")
+					return er.InvalidCommitNo
 				}
 				if err := rv.RevertGroup(command_list[1], commitNumber); err != nil {
 					return err

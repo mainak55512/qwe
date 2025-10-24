@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	rb "github.com/mainak55512/qwe/rebase"
 	res "github.com/mainak55512/qwe/reconstruct"
@@ -15,13 +16,13 @@ func Revert(commitNumber int, filePath string) error {
 
 	// Check if the file is present before reverting
 	if exists := utl.FileExists(filePath); !exists {
-		return fmt.Errorf("Invalid file path")
+		return er.InvalidFile
 	}
 
 	// Get tracker details
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		return err
 	}
 	fileId := utl.Hasher(filePath)
 
@@ -31,7 +32,7 @@ func Revert(commitNumber int, filePath string) error {
 
 		// Check if the commit number is valid
 		if commitNumber < -1 || commitNumber > len(val.Versions)-1 {
-			return fmt.Errorf("Not a valid commit number")
+			return er.InvalidCommitNo
 		}
 
 		// Reconstruct the file till the specific commit number
@@ -48,7 +49,7 @@ func Revert(commitNumber int, filePath string) error {
 		tracker[fileId] = val
 		marshalContent, err := json.MarshalIndent(tracker, "", " ")
 		if err != nil {
-			return fmt.Errorf("Commit unsuccessful!")
+			return er.CommitUnsuccessful
 		}
 
 		// Update the tracker
@@ -74,7 +75,7 @@ func RevertGroup(groupName string, commitID int) error {
 	// Check if valid group
 	val, ok := groupTracker[groupID]
 	if !ok {
-		return fmt.Errorf("Invalid group!")
+		return er.InvalidGroup
 	}
 
 	// Get all the file details of that specific version
@@ -102,7 +103,7 @@ func RevertGroup(groupName string, commitID int) error {
 
 	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return er.CommitUnsuccessful
 	}
 
 	// Update the tracker
