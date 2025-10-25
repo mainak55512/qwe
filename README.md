@@ -8,6 +8,9 @@
 **qwe** (pronounced *kiwi*) makes version control effortless.
 Track individual files with precision, group them seamlessly, and commit or revert changes individually or together — all in one lightweight, intuitive tool built for speed and simplicity.
 
+![Static Badge](https://img.shields.io/badge/version-control-system?style=for-the-badge&logo=git&logoColor=white&color=blue) ![Static Badge](https://img.shields.io/badge/revision-control-system?style=for-the-badge&logo=git&logoColor=white&color=red) ![Downloads](https://img.shields.io/github/downloads/mainak55512/qwe/total?style=for-the-badge) ![GitHub License](https://img.shields.io/github/license/mainak55512/qwe?style=for-the-badge)
+
+![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white) ![GitHub repo size](https://img.shields.io/github/repo-size/mainak55512/qwe?style=for-the-badge)
 
 ## Features
 
