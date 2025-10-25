@@ -107,7 +107,7 @@ func HandleArgs() error {
 		case "init":
 			{
 				if len(command_list) != 1 {
-					return fmt.Errorf("init command doesn't take any argument")
+					return er.CLIInitErr
 				}
 				if err := in.Init(); err != nil {
 					return err
@@ -116,7 +116,7 @@ func HandleArgs() error {
 		case "group-init":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-init command takes one argument")
+					return er.CLIGrpInitErr
 				}
 				if err := in.GroupInit(command_list[1]); err != nil {
 					return err
@@ -125,7 +125,7 @@ func HandleArgs() error {
 		case "track":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("Track command accepts one argument")
+					return er.CLITrackErr
 				}
 				if _, err := tr.StartTracking(command_list[1]); err != nil {
 					return err
@@ -134,7 +134,7 @@ func HandleArgs() error {
 		case "group-track":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Track command accepts two argument")
+					return er.CLIGrpTrackErr
 				}
 				if err := tr.StartGroupTracking(command_list[1], command_list[2]); err != nil {
 					return err
@@ -143,7 +143,7 @@ func HandleArgs() error {
 		case "commit":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Commit command accepts two arguments")
+					return er.CLICommitErr
 				}
 				if _, _, err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
 					return err
@@ -152,7 +152,7 @@ func HandleArgs() error {
 		case "group-commit":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("group-commit command accepts two arguments")
+					return er.CLIGrpCommitErr
 				}
 				if err := cm.CommitGroup(command_list[1], command_list[2]); err != nil {
 					return err
@@ -161,7 +161,7 @@ func HandleArgs() error {
 		case "list":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("List command accepts one argument")
+					return er.CLIListErr
 				}
 				if err := cm.GetCommitList(command_list[1]); err != nil {
 					return err
@@ -170,7 +170,7 @@ func HandleArgs() error {
 		case "group-list":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-list command accepts one argument")
+					return er.CLIGrpListErr
 				}
 				if err := cm.GetGroupCommitList(command_list[1]); err != nil {
 					return err
@@ -179,7 +179,7 @@ func HandleArgs() error {
 		case "revert":
 			{
 				if len(command_list) != 3 && len(command_list) != 2 {
-					return fmt.Errorf("Revert command accepts atmost two arguments")
+					return er.CLIRevertErr
 				}
 				var commitNumber int
 				var err error
@@ -198,7 +198,7 @@ func HandleArgs() error {
 		case "group-revert":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Revert command accepts two arguments")
+					return er.CLIGrpRevertErr
 				}
 				commitNumber, err := strconv.Atoi(command_list[2])
 				if err != nil {
@@ -211,7 +211,7 @@ func HandleArgs() error {
 		case "diff":
 			{
 				if len(command_list) != 2 && len(command_list) != 4 {
-					return fmt.Errorf("diff command accepts one or three arguments")
+					return er.CLIDiffErr
 				} else if len(command_list) == 4 {
 					if err := diff.Diff(command_list[1], command_list[2], command_list[3]); err != nil {
 						return err
@@ -225,7 +225,7 @@ func HandleArgs() error {
 		case "current":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("current command accepts one argument")
+					return er.CLICurrentErr
 				}
 				if err := cm.CurrentCommit(command_list[1]); err != nil {
 					return err
@@ -234,7 +234,7 @@ func HandleArgs() error {
 		case "group-current":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-current command accepts one argument")
+					return er.CLIGrpCurrentErr
 				}
 				if err := cm.CurrentGroupCommit(command_list[1]); err != nil {
 					return err
@@ -243,7 +243,7 @@ func HandleArgs() error {
 		case "recover":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("recover command accepts one argument")
+					return er.CLIRecoverErr
 				}
 				if err := rc.Recover(command_list[1]); err != nil {
 					return err
@@ -252,7 +252,7 @@ func HandleArgs() error {
 		case "rebase":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("rebase command accepts one argument")
+					return er.CLIRebaseErr
 				}
 				if err := rb.Rebase(command_list[1]); err != nil {
 					return err
