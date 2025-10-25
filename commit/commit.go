@@ -5,11 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	cp "github.com/mainak55512/qwe/compressor"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
@@ -23,7 +23,7 @@ func CommitUnit(filePath, message string) (string, int, error) {
 	// Get tracking details from _tracker.qwe
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return "", -3, fmt.Errorf("Can not retrieve Tracker, err: %s", err)
+		return "", -3, err
 	}
 
 	// Create hash of file name, it will be used later to retrive file details from tracker
@@ -41,7 +41,7 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		// This is the latest version of uncommitted file changes
 		new_file, err := os.Open(filePath)
 		if err != nil {
-			return "", -3, fmt.Errorf("Error opening file: %v", err) // -3 means unsuccessful
+			return "", -3, err // -3 means unsuccessful
 		}
 		defer new_file.Close()
 
@@ -53,7 +53,7 @@ func CommitUnit(filePath, message string) (string, int, error) {
 
 		current_file, err := os.Open(target)
 		if err != nil {
-			log.Fatalf("Error opening file: %v", err)
+			return "", -3, err
 		}
 
 		current_scanner := bufio.NewScanner(current_file)
@@ -86,10 +86,10 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		output_writer := bufio.NewWriter(output_content)
 		_, err = output_writer.WriteString(diff_content)
 		if err != nil {
-			return "", -3, fmt.Errorf("Can not write to base file") // -3 means unsuccessful
+			return "", -3, er.BaseWriteErr // -3 means unsuccessful
 		}
 		if err = output_writer.Flush(); err != nil {
-			return "", -3, fmt.Errorf("Output file write error") // -3 means unsuccessful
+			return "", -3, er.OutputWriteErr // -3 means unsuccessful
 		}
 		output_content.Close()
 
@@ -110,13 +110,13 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		commitID = len(val.Versions) - 1
 
 	} else {
-		return "", -3, fmt.Errorf("File is not tracked: %s", filePath) // -3 means unsuccessful
+		return "", -3, er.FileNotTracked // -3 means unsuccessful
 	}
 
 	// Save the updated tracker in _tracker.qwe
 	marshalContent, err := json.MarshalIndent(tracker, "", " ")
 	if err != nil {
-		return "", -3, fmt.Errorf("Commit unsuccessful!") // -3 means unsuccessful
+		return "", -3, er.CommitUnsuccessful // -3 means unsuccessful
 	}
 
 	if err = tr.SaveTracker(0, marshalContent); err != nil {
@@ -142,7 +142,7 @@ func CommitGroup(groupName, commitMessage string) error {
 	// Check if valid group
 	gr, ok := groupTracker[groupID]
 	if !ok {
-		return fmt.Errorf("Invalid group!")
+		return er.InvalidGroup
 	}
 
 	// version order array maintains the order of commit history, appending new commit version here
@@ -151,7 +151,7 @@ func CommitGroup(groupName, commitMessage string) error {
 	// Fetching the current group commit
 	current, ok := gr.Versions[gr.Current]
 	if !ok {
-		return fmt.Errorf("Can not retrieve current group version!")
+		return er.CurrentGrpErr
 	}
 
 	// newFiles contains the modified file details for the new commit
@@ -189,7 +189,7 @@ func CommitGroup(groupName, commitMessage string) error {
 
 	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return er.CommitUnsuccessful
 	}
 
 	// Update the tracker
@@ -206,7 +206,7 @@ func GetCommitList(filePath string) error {
 	// Get tracker details
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		return err
 	}
 
 	fileId := utl.Hasher(filePath)
@@ -232,7 +232,7 @@ func GetGroupCommitList(groupName string) error {
 	// Get group tracker
 	_, groupTracker, err := tr.GetTracker(1)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", groupName)
+		return err
 	}
 
 	groupID := utl.Hasher(groupName)
@@ -240,7 +240,7 @@ func GetGroupCommitList(groupName string) error {
 	// Check if valid group
 	gr, ok := groupTracker[groupID]
 	if !ok {
-		return fmt.Errorf("Invalid group!")
+		return er.InvalidGroup
 	}
 
 	w := new(tw.Writer)
@@ -269,7 +269,7 @@ func CurrentCommit(filePath string) error {
 	// Return error if the file is not tracked
 	val, ok := tracker[fileId]
 	if !ok {
-		return fmt.Errorf("File is not tracked!")
+		return er.FileNotTracked
 	}
 
 	// Get the current version of the file
@@ -309,7 +309,7 @@ func CurrentGroupCommit(groupName string) error {
 	// Check if valid group
 	val, ok := groupTracker[groupID]
 	if !ok {
-		return fmt.Errorf("Invalid group!")
+		return er.InvalidGroup
 	}
 
 	// Get the commit id of current version from the group tracker

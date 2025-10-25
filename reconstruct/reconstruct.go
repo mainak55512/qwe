@@ -2,8 +2,8 @@ package reconstruct
 
 import (
 	"bufio"
-	"fmt"
 	cp "github.com/mainak55512/qwe/compressor"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	tr "github.com/mainak55512/qwe/tracker"
 	"io"
@@ -40,7 +40,7 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 
 	// Compress the base varient
 	if err = cp.CompressFile(".qwe/_object/" + val.Base); err != nil {
-		return fmt.Errorf("Compression error")
+		return err
 	}
 	target_content.Close()
 
@@ -63,14 +63,14 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 
 		diff_file, err := os.Open(".qwe/_object/" + elem.UID)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 		// defer diff_file.Close()
 		diff_scanner := bufio.NewScanner(diff_file)
 
 		base_file, err := os.Open(target)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 		// defer base_file.Close()
 		base_scanner := bufio.NewScanner(base_file)
@@ -81,7 +81,10 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 		// reconstructed file should only have these many lines in it.
 		diff_scanner.Scan()
 
-		total_lines, _ := strconv.Atoi(diff_scanner.Text())
+		total_lines, err := strconv.Atoi(diff_scanner.Text())
+		if err != nil {
+			return err
+		}
 
 		// Retrieving a line from commit file
 		diff_scanner.Scan()
@@ -130,10 +133,10 @@ func Reconstruct(val tr.Tracker, target string, commitID int) error {
 		output_writer := bufio.NewWriter(output_content)
 		_, err = output_writer.WriteString(output)
 		if err != nil {
-			return fmt.Errorf("Can not write to base file")
+			return er.BaseWriteErr
 		}
 		if err = output_writer.Flush(); err != nil {
-			return fmt.Errorf("Output file write error")
+			return er.OutputWriteErr
 		}
 		output_content.Close()
 	}

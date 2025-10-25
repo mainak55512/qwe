@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cp "github.com/mainak55512/qwe/compressor"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 )
 
@@ -59,7 +60,7 @@ func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 	} else if trackerType == 1 {
 		trackerPath = ".qwe/_group_tracker.qwe"
 	} else {
-		return nil, nil, fmt.Errorf("Invalid Tracker type!")
+		return nil, nil, er.InvalidTracker
 	}
 
 	// Decompress _tracker.qwe
@@ -69,14 +70,14 @@ func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 
 	file, err := os.Open(trackerPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Can not open tracker!")
+		return nil, nil, err
 	}
 
 	reader := bufio.NewReader(file)
 	current_tracker, err := io.ReadAll(reader)
 	if err != nil {
 		file.Close()
-		return nil, nil, fmt.Errorf("Can not access tracker!")
+		return nil, nil, er.TrackerAccessErr
 	} else {
 
 		if trackerType == 0 {
@@ -84,14 +85,14 @@ func GetTracker(trackerType int) (TrackerSchema, GroupTrackerSchema, error) {
 			if err := json.Unmarshal(current_tracker, &tracker_schema); err != nil {
 				file.Close()
 				cp.CompressFile(trackerPath)
-				return nil, nil, fmt.Errorf("Can not parse tracker!")
+				return nil, nil, er.TrackerParseErr
 			}
 		} else {
 			// Parse the content of the tracker file
 			if err := json.Unmarshal(current_tracker, &group_tracker_schema); err != nil {
 				file.Close()
 				cp.CompressFile(trackerPath)
-				return nil, nil, fmt.Errorf("Can not parse tracker!")
+				return nil, nil, er.TrackerParseErr
 			}
 		}
 	}
@@ -115,7 +116,7 @@ func SaveTracker(trackerType int, content []byte) error {
 	} else if trackerType == 1 {
 		trackerPath = ".qwe/_group_tracker.qwe"
 	} else {
-		return fmt.Errorf("Invalid Tracker type!")
+		return er.InvalidTracker
 	}
 
 	// Truncate the tracker file
@@ -128,10 +129,10 @@ func SaveTracker(trackerType int, content []byte) error {
 	writer := bufio.NewWriter(tracker_content)
 	_, err = writer.Write(content)
 	if err != nil {
-		return fmt.Errorf("Can not write to base file")
+		return er.BaseWriteErr
 	}
 	if err = writer.Flush(); err != nil {
-		return fmt.Errorf("Tracker file write error")
+		return er.TrackerWriteErr
 	}
 	tracker_content.Close()
 
@@ -158,7 +159,7 @@ func StartTracking(filePath string) (string, error) {
 
 	// If the file is already tracked then return error
 	if _, ok := tracker[fileId]; ok {
-		return "", fmt.Errorf("File is already being tracked")
+		return "", er.FileTracked
 	}
 
 	base_content, err := os.ReadFile(filePath)
@@ -168,12 +169,12 @@ func StartTracking(filePath string) (string, error) {
 
 	// (Need to change to a buffered writer) write the content of the file to the base varient
 	if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
-		return "", fmt.Errorf("Tracking unsuccessful!")
+		return "", er.TrackUnsuccessful
 	}
 
 	// Compress the base file
 	if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
-		return fileObjectId, err
+		return "", err
 	}
 
 	// Add tracker entry for the file
@@ -185,12 +186,12 @@ func StartTracking(filePath string) (string, error) {
 
 	marshalContent, err := json.MarshalIndent(tracker, "", " ")
 	if err != nil {
-		return fileObjectId, fmt.Errorf("Commit unsuccessful!")
+		return "", er.CommitUnsuccessful
 	}
 
 	// Update the tracker
 	if err = SaveTracker(0, marshalContent); err != nil {
-		return fileObjectId, err
+		return "", err
 	}
 	fmt.Println("Started tracking", filePath)
 	return fileObjectId, nil
@@ -218,7 +219,7 @@ func StartGroupTracking(groupName, filePath string) error {
 	if ok { // If the file is already tracked, get the current version and update the group tracker
 		val, ok := groupTracker[groupId]
 		if !ok {
-			return fmt.Errorf("Invalid group!")
+			return er.InvalidGroup
 		}
 		_, ok = val.Versions[val.Current].Files[fileId]
 		if ok {
@@ -250,7 +251,7 @@ func StartGroupTracking(groupName, filePath string) error {
 		}
 		val, ok := groupTracker[groupId]
 		if !ok {
-			return fmt.Errorf("Invalid group!")
+			return er.InvalidGroup
 		}
 
 		// As the file is first time tracked, the commit id is set to -2, that indicates, in case of revert, need to revert back to base version
@@ -263,7 +264,7 @@ func StartGroupTracking(groupName, filePath string) error {
 	}
 	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return er.CommitUnsuccessful
 	}
 
 	// Update the tracker

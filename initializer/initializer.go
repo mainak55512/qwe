@@ -3,6 +3,7 @@ package initializer
 import (
 	"encoding/json"
 	"fmt"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	tr "github.com/mainak55512/qwe/tracker"
 	"os"
@@ -15,22 +16,22 @@ func Init() error {
 
 	// Check if qwe is already initialized
 	if exists := utl.FolderExists(qwePath); exists {
-		return fmt.Errorf("Repository already initiated!")
+		return er.RepoAlreadyInit
 	} else {
 
 		// Create objects directory
 		if err := os.MkdirAll(qwePath+"/_object/", os.ModePerm); err != nil {
-			return fmt.Errorf("Can not initiate repository!")
+			return er.RepoInitError
 		}
 		// Create _tracker.qwe file
 		if _, err := os.Create(qwePath + "/_tracker.qwe"); err != nil {
 			os.RemoveAll(qwePath)
-			return fmt.Errorf("Can not initiate repository!")
+			return er.RepoInitError
 		}
 		// Create _group_tracker.qwe file
 		if _, err := os.Create(qwePath + "/_group_tracker.qwe"); err != nil {
 			os.RemoveAll(qwePath)
-			return fmt.Errorf("Can not initiate repository!")
+			return er.RepoInitError
 		}
 		// Initialize the tracker with '{}'
 		if err := tr.SaveTracker(0, []byte("{}")); err != nil {
@@ -51,7 +52,7 @@ func GroupInit(groupName string) error {
 	qwePath := ".qwe"
 
 	if exists := utl.FolderExists(qwePath); !exists {
-		return fmt.Errorf("No qwe repository found!")
+		return er.RepoNotFound
 	}
 
 	// Get group tracker
@@ -65,7 +66,7 @@ func GroupInit(groupName string) error {
 
 	// Check if group is already tracked
 	if _, ok := groupTracker[groupID]; ok {
-		return fmt.Errorf("Group is already being tracked!")
+		return er.GrpAlreadyTracked
 	}
 
 	// Instantiate a logical group in the group tracker
@@ -83,7 +84,7 @@ func GroupInit(groupName string) error {
 
 	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return er.CommitUnsuccessful
 	}
 
 	// Update the tracker

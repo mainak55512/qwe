@@ -3,6 +3,7 @@ package rebase
 import (
 	"encoding/json"
 	"fmt"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
@@ -14,7 +15,7 @@ func Rebase(filePath string) error {
 	// Get tracker details
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
+		return err
 	}
 
 	fileId := utl.Hasher(filePath)
@@ -22,7 +23,7 @@ func Rebase(filePath string) error {
 	// Check if file is tracked
 	val, ok := tracker[fileId]
 	if !ok {
-		return fmt.Errorf("File is not tracked!")
+		return er.FileNotTracked
 	}
 
 	// Reconstruct the file till its base version
@@ -35,7 +36,7 @@ func Rebase(filePath string) error {
 	tracker[fileId] = val
 	marshalContent, err := json.MarshalIndent(tracker, "", " ")
 	if err != nil {
-		return fmt.Errorf("Commit unsuccessful!")
+		return er.CommitUnsuccessful
 	}
 
 	// Update the tracker

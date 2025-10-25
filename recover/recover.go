@@ -2,6 +2,7 @@ package recover
 
 import (
 	"fmt"
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
@@ -12,18 +13,18 @@ func Recover(filePath string) error {
 
 	// Check if the file is present before recovering
 	if exists := utl.FileExists(filePath); exists {
-		return fmt.Errorf("File already exists")
+		return er.FileExists
 	}
 
 	// Get tracker details
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Current version of %s", filePath)
+		return err
 	}
 	fileId := utl.Hasher(filePath)
 	val, ok := tracker[fileId]
 	if !ok {
-		return fmt.Errorf("Error parsing tracker!")
+		return er.FileNotTracked
 	}
 
 	target := filePath

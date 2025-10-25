@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
@@ -29,7 +30,7 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 	// Get details from _tracker.qwe
 	tracker, _, err := tr.GetTracker(0)
 	if err != nil {
-		return fmt.Errorf("Can not retrieve Tracker, err: %s", err)
+		return err
 	}
 
 	fileId := utl.Hasher(filePath)
@@ -38,7 +39,7 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 	// Check if file is being tracked
 	val, ok := tracker[fileId]
 	if !ok {
-		return fmt.Errorf("File is not tracked!")
+		return er.FileNotTracked
 	}
 
 	// Will run if no commit id is passed or both commit id is passed and first one is 'uncommitted'
@@ -67,13 +68,13 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 		// with the latest committed version or with the version specified by the commitID2Str
 		new_file, err := os.Open(filePath)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 		defer new_file.Close()
 
 		current_file, err := os.Open(target)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 
 		current_scanner := bufio.NewScanner(current_file)
@@ -137,13 +138,13 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 		}
 		new_file, err := os.Open(dest)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 		defer new_file.Close()
 
 		current_file, err := os.Open(src)
 		if err != nil {
-			return fmt.Errorf("Error opening file: %v", err)
+			return err
 		}
 		// defer current_file.Close()
 		current_scanner := bufio.NewScanner(current_file)

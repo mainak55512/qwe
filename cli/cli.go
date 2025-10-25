@@ -9,6 +9,7 @@ import (
 	cm "github.com/mainak55512/qwe/commit"
 	"github.com/mainak55512/qwe/diff"
 	in "github.com/mainak55512/qwe/initializer"
+	er "github.com/mainak55512/qwe/qwerror"
 	rb "github.com/mainak55512/qwe/rebase"
 	rc "github.com/mainak55512/qwe/recover"
 	rv "github.com/mainak55512/qwe/revert"
@@ -19,35 +20,55 @@ import (
 Version details and available commands
 */
 func helpText() {
-	fmt.Println(
-		`
-        @@@@@@@@@@                                                                          
-     @@@           @@@@@@@                                                                  
-   @@                    @@@                                                               
- @@                        @@                                                              
- @@       @                @@@                                                              
- @            @@@@        @@ @@@                                                            
- @     @@@   @@  @     @@      @@                                                           
- @    @  @@@ @ @@@      @@      @@                                                          
- @     @@   @@ @        @        @@                                                         
- @           @ @       @@         @                                                         
- @@          @ @     @@@          @                                                         
-  @@@        @@@   @@@            @                                                         
-    @@@@      @@@@                                                                          
-       @    @@@ @                                                                           
-       @@  @@ @ @@@@                                                                        
-       @@@@   @    @@                                                                       
-        @@@@@ @@@@@@                                                                        
-    _____        _______ 
-   / _ \ \      / / ____|
-  | | | \ \ /\ / /|  _|  
-  | |_| |\ V  V / | |___ 
-   \__\_\ \_/\_/  |_____|
-		`,
-	)
+	fmt.Println(`
+                                                                                     
+                    @@@@@@@@@                                                        
+               @@@@@@@@@@@@@@@@@@@@                                                  
+            @@@@@@              @@@@@@                                               
+         @@@@@                      @@@@@@@@@@@@@                                    
+        @@@@                           @@@@@@@@@@@@@                                 
+      @@@@                                       @@@@                                
+     @@@@                                  @@      @@@                               
+    @@@                                    @@       @@                               
+   @@@                                              @@@                              
+   @@@                    @@@@@                    @@@@@@                            
+  @@@                     @@  @@                  @@@@@@@@@                          
+  @@@                    @@@@@@@            @@@@@@@@   @@@@@                         
+  @@         @@@       @@@@                @@@@@@        @@@@@                       
+  @@       @@   @     @@@        @@@@@     @@@            @@@@@                      
+  @@       @@   @   @@@         @@   @@    @@@              @@@@                     
+  @@@       @@@@@  @@@          @@@@@@    @@@                @@@                     
+  @@@        @@@   @@@        @@@       @@@@                 @@@@                    
+   @@@        @@@  @@@      @@@        @@@@                   @@@                    
+    @@@        @@@@@@@    @@@@      @@@@@                     @@@                    
+     @@@@        @@@@@   @@@     @@@@@@                       @@@                    
+      @@@@@@       @@@  @@  @@@@@@@@                                                 
+         @@@@@@@@  @@@  @@ @@@@@                                                     
+             @@@@  @@@  @@                                                           
+              @@@  @@@  @@                                                           
+              @@@  @@@  @@          @@@                                              
+              @@@  @@@  @@@@@@@@@@@@@ @@                                             
+              @@@@@@     @@@@@@@@@@@@@@@                                             
+              @@@@@                 @@@                                              
+              @@@@@@@@@                                                              
+                                                                                     
+                                                                                     
+          @                                     @@                                   
+      @@@@@@@@@@@   @@       @@@       @@    @@@@@@@@@                               
+    @@        @@@    @@      @@@@     @@   @@        @@                              
+   @@          @@     @@    @@ @@     @@   @@         @@                             
+   @@           @     @@   @@   @@   @@   @@@@@@@@@@@@@@                             
+   @@          @@      @@ @@     @@ @@     @@                                        
+    @@@       @@@       @@@@     @@ @@     @@@       @@                              
+      @@@@@@@@@@@       @@@       @@@        @@@@@@@@@                               
+	       @@                                                                    
+               @@                                                                    
+               @@                                                                    
+                                                                                     
+		`)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.2.0")
+	fmt.Println("Version: v0.2.1")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -58,6 +79,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe group-list <group name>\t[Get list of all commits on the group]")
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
 	fmt.Fprintln(w, "qwe group-commit <group name> \"<commit message>\"\t[Commit current version of all the files tracked in the group]")
+	fmt.Fprintln(w, "qwe revert <file-path>\t[Revert the file to the last committed version]")
 	fmt.Fprintln(w, "qwe revert <file-path> <commit-id>\t[Revert the file to a previous version]")
 	fmt.Fprintln(w, "qwe group-revert <group name> <commit-id>\t[Revert all the files tracked in the group to a previous version]")
 	fmt.Fprintln(w, "qwe current <file-path>\t[Get current commit details of the file]")
@@ -85,7 +107,7 @@ func HandleArgs() error {
 		case "init":
 			{
 				if len(command_list) != 1 {
-					return fmt.Errorf("init command doesn't take any argument")
+					return er.CLIInitErr
 				}
 				if err := in.Init(); err != nil {
 					return err
@@ -94,7 +116,7 @@ func HandleArgs() error {
 		case "group-init":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-init command takes one argument")
+					return er.CLIGrpInitErr
 				}
 				if err := in.GroupInit(command_list[1]); err != nil {
 					return err
@@ -103,7 +125,7 @@ func HandleArgs() error {
 		case "track":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("Track command accepts one argument")
+					return er.CLITrackErr
 				}
 				if _, err := tr.StartTracking(command_list[1]); err != nil {
 					return err
@@ -112,7 +134,7 @@ func HandleArgs() error {
 		case "group-track":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Track command accepts two argument")
+					return er.CLIGrpTrackErr
 				}
 				if err := tr.StartGroupTracking(command_list[1], command_list[2]); err != nil {
 					return err
@@ -121,7 +143,7 @@ func HandleArgs() error {
 		case "commit":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Commit command accepts two arguments")
+					return er.CLICommitErr
 				}
 				if _, _, err := cm.CommitUnit(command_list[1], command_list[2]); err != nil {
 					return err
@@ -130,7 +152,7 @@ func HandleArgs() error {
 		case "group-commit":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("group-commit command accepts two arguments")
+					return er.CLIGrpCommitErr
 				}
 				if err := cm.CommitGroup(command_list[1], command_list[2]); err != nil {
 					return err
@@ -139,7 +161,7 @@ func HandleArgs() error {
 		case "list":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("List command accepts one argument")
+					return er.CLIListErr
 				}
 				if err := cm.GetCommitList(command_list[1]); err != nil {
 					return err
@@ -148,7 +170,7 @@ func HandleArgs() error {
 		case "group-list":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-list command accepts one argument")
+					return er.CLIGrpListErr
 				}
 				if err := cm.GetGroupCommitList(command_list[1]); err != nil {
 					return err
@@ -156,12 +178,18 @@ func HandleArgs() error {
 			}
 		case "revert":
 			{
-				if len(command_list) != 3 {
-					return fmt.Errorf("Revert command accepts two arguments")
+				if len(command_list) != 3 && len(command_list) != 2 {
+					return er.CLIRevertErr
 				}
-				commitNumber, err := strconv.Atoi(command_list[2])
-				if err != nil {
-					return fmt.Errorf("Not a valid commit number")
+				var commitNumber int
+				var err error
+				if len(command_list) == 3 {
+					commitNumber, err = strconv.Atoi(command_list[2])
+					if err != nil {
+						return er.InvalidCommitNo
+					}
+				} else {
+					commitNumber = -1
 				}
 				if err := rv.Revert(commitNumber, command_list[1]); err != nil {
 					return err
@@ -170,11 +198,11 @@ func HandleArgs() error {
 		case "group-revert":
 			{
 				if len(command_list) != 3 {
-					return fmt.Errorf("Revert command accepts two arguments")
+					return er.CLIGrpRevertErr
 				}
 				commitNumber, err := strconv.Atoi(command_list[2])
 				if err != nil {
-					return fmt.Errorf("Not a valid commit number")
+					return er.InvalidCommitNo
 				}
 				if err := rv.RevertGroup(command_list[1], commitNumber); err != nil {
 					return err
@@ -183,7 +211,7 @@ func HandleArgs() error {
 		case "diff":
 			{
 				if len(command_list) != 2 && len(command_list) != 4 {
-					return fmt.Errorf("diff command accepts one or three arguments")
+					return er.CLIDiffErr
 				} else if len(command_list) == 4 {
 					if err := diff.Diff(command_list[1], command_list[2], command_list[3]); err != nil {
 						return err
@@ -197,7 +225,7 @@ func HandleArgs() error {
 		case "current":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("current command accepts one argument")
+					return er.CLICurrentErr
 				}
 				if err := cm.CurrentCommit(command_list[1]); err != nil {
 					return err
@@ -206,7 +234,7 @@ func HandleArgs() error {
 		case "group-current":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("group-current command accepts one argument")
+					return er.CLIGrpCurrentErr
 				}
 				if err := cm.CurrentGroupCommit(command_list[1]); err != nil {
 					return err
@@ -215,7 +243,7 @@ func HandleArgs() error {
 		case "recover":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("recover command accepts one argument")
+					return er.CLIRecoverErr
 				}
 				if err := rc.Recover(command_list[1]); err != nil {
 					return err
@@ -224,7 +252,7 @@ func HandleArgs() error {
 		case "rebase":
 			{
 				if len(command_list) != 2 {
-					return fmt.Errorf("rebase command accepts one argument")
+					return er.CLIRebaseErr
 				}
 				if err := rb.Rebase(command_list[1]); err != nil {
 					return err

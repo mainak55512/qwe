@@ -68,6 +68,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe group-list <group name>` | List all commits for the specified group |
 | `qwe commit <file-path> "<commit message>"` | Commit changes to the file with a message |
 | `qwe group-commit <group name> "<commit message>"` | Commit changes of all the files tracked in the group with a message |
+| `qwe revert <file-path>` | Revert the file to the last committed version |
 | `qwe revert <file-path> <commit-id>` | Revert the file to a previous version |
 | `qwe group-revert <group name> <commit-id>` | Revert the files tracked in the group to a previous version |
 | `qwe current <file-path>` | Shows current commit details of the specified file |
