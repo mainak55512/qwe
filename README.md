@@ -65,6 +65,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe` | Shows all the available commands |
 | `qwe init` | Initialize qwe in the current directory |
 | `qwe group-init <group name>` | Initialize a group in the current directory |
+| `qwe groups` | List all the groups tracked in the repository |
 | `qwe track <file-path>` | Start tracking a file |
 | `qwe group-track <group name> <file-path>` | Start tracking a file in a group |
 | `qwe list <file-path>` | List all commits for the specified file |

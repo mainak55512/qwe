@@ -57,6 +57,6 @@ var (
 	CLIGrpCurrentErr   = new(36, "group-current command only accepts 'group name' as argument!")
 	CLIRecoverErr      = new(37, "recover command only accepts 'file path' as argument!")
 	CLIRebaseErr       = new(38, "rebase command only accepts 'file path' as argument!")
-	NoDiff             = new(39, "No changes found with the previous commit!")
+	NoFileOrDiff       = new(39, "File does not exist or no changes found with the previous commit!")
 	GrpNameListErr     = new(40, "groups command takes no arguments!")
 )

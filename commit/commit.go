@@ -43,7 +43,8 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		// This is the latest version of uncommitted file changes
 		new_file, err := os.Open(filePath)
 		if err != nil {
-			return "", -3, err // -3 means unsuccessful
+			// return "", -3, err // -3 means unsuccessful
+			return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 		}
 		defer new_file.Close()
 
@@ -79,7 +80,7 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		if diff_content == "" {
 			if !current_scanner.Scan() {
 				os.Remove(target)
-				return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoDiff
+				return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 			}
 		}
 
@@ -173,7 +174,7 @@ func CommitGroup(groupName, commitMessage string) error {
 		fileObjectID, commitID, err := CommitUnit(current.Files[k].FileName, commitMessage)
 
 		// Do not treat it as error if there is no change in the file
-		if err != nil && !errors.Is(err, er.NoDiff) {
+		if err != nil && !errors.Is(err, er.NoFileOrDiff) {
 			return err
 		}
 
