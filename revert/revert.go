@@ -16,7 +16,7 @@ func Revert(commitNumber int, filePath string) error {
 
 	// Check if the file is present before reverting
 	if exists := utl.FileExists(filePath); !exists {
-		return er.InvalidFile
+		return fmt.Errorf("%w: %s\nUse 'recover' command to restore '%[2]s' if it was tracked earlier", er.InvalidFile, filePath)
 	}
 
 	// Get tracker details
@@ -76,6 +76,10 @@ func RevertGroup(groupName string, commitID int) error {
 	val, ok := groupTracker[groupID]
 	if !ok {
 		return er.InvalidGroup
+	}
+
+	if commitID < 0 || commitID > len(val.VersionOrder)-1 {
+		return er.InvalidCommitNo
 	}
 
 	// Get all the file details of that specific version

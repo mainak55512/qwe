@@ -4,17 +4,19 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"time"
+
+	"strings"
+	tw "text/tabwriter"
 
 	cp "github.com/mainak55512/qwe/compressor"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
 	tr "github.com/mainak55512/qwe/tracker"
-	"strings"
-	tw "text/tabwriter"
 )
 
 // Tracks the difference of the uncommitted file
@@ -41,7 +43,8 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		// This is the latest version of uncommitted file changes
 		new_file, err := os.Open(filePath)
 		if err != nil {
-			return "", -3, err // -3 means unsuccessful
+			// return "", -3, err // -3 means unsuccessful
+			return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 		}
 		defer new_file.Close()
 
@@ -70,6 +73,14 @@ func CommitUnit(filePath, message string) (string, int, error) {
 			current_scanner.Scan()
 			if !bytes.Equal(current_scanner.Bytes(), new_scanner.Bytes()) {
 				diff_content += fmt.Sprintf("%d @@@ %s\n", line, utl.ConvStrEnc(new_scanner.Text()))
+			}
+		}
+
+		// This ensures no redundent commits are created for the file if there is no change
+		if diff_content == "" {
+			if !current_scanner.Scan() {
+				os.Remove(target)
+				return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 			}
 		}
 
@@ -161,7 +172,9 @@ func CommitGroup(groupName, commitMessage string) error {
 
 		// Commit each and every file that is tracked in the group
 		fileObjectID, commitID, err := CommitUnit(current.Files[k].FileName, commitMessage)
-		if err != nil {
+
+		// Do not treat it as error if there is no change in the file
+		if err != nil && !errors.Is(err, er.NoFileOrDiff) {
 			return err
 		}
 
@@ -324,7 +337,27 @@ func CurrentGroupCommit(groupName string) error {
 	// Print current commit details
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Fprintf(w, "\nCurrent Commit ID:\t%d\nCommit Message:\t%s\n", commitID, val.Versions[val.Current].CommitMessage)
+	fmt.Fprintf(w, "\nName:\t %s\nCurrent Commit ID:\t %d\nCommit Message:\t %s\n", val.GroupName, commitID, val.Versions[val.Current].CommitMessage)
+	files := val.Versions[val.Current].Files
+	fmt.Fprintf(w, "\nAssociated files:\n")
+	for e := range files {
+		fmt.Fprintf(w, "File: %s, \tCommitID: %d\n", files[e].FileName, files[e].CommitNumber)
+	}
 	w.Flush()
+	return nil
+}
+
+// Shows the names of groups tracked in the current repository
+func GroupNameList() error {
+	// Get group tracker
+	_, groupTracker, err := tr.GetTracker(1)
+	if err != nil {
+		return err
+	}
+
+	// print the group names
+	for k := range groupTracker {
+		fmt.Println(groupTracker[k].GroupName)
+	}
 	return nil
 }
