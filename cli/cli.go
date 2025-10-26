@@ -131,6 +131,15 @@ func HandleArgs() error {
 					return err
 				}
 			}
+		case "groups":
+			{
+				if len(command_list) != 1 {
+					return er.GrpNameListErr
+				}
+				if err := cm.GroupNameList(); err != nil {
+					return err
+				}
+			}
 		case "group-track":
 			{
 				if len(command_list) != 3 {
