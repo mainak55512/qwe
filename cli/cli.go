@@ -85,6 +85,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe group-revert <group name> <commit-id>\t[Revert all the files tracked in the group to a previous version]")
 	fmt.Fprintln(w, "qwe current <file-path>\t[Get current commit details of the file]")
 	fmt.Fprintln(w, "qwe group-current <group name>\t[Get current commit details of the group]")
+	fmt.Fprintln(w, "qwe group-current <group name> <commit-id>\t[Get commit details of a specific commit of the group]")
 	fmt.Fprintln(w, "qwe recover <file-path>\t[Restore deleted file if earlier tracked]")
 	fmt.Fprintln(w, "qwe rebase <file-path>\t[Revert back to base version of the file]")
 	fmt.Fprintln(w, "qwe diff <file-path>\t[Shows difference between latest uncommitted version and latest committed version]")

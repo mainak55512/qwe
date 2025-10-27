@@ -77,6 +77,7 @@ Download the prebuilt binary for your platform from the **[Releases](https://git
 | `qwe group-revert <group name> <commit-id>` | Revert the files tracked in the group to a previous version |
 | `qwe current <file-path>` | Shows current commit details of the specified file |
 | `qwe group-current <file-path>` | Shows current commit details of the specified group |
+| `qwe group-current <group name> <commit-id>` | Get commit details of a specific commit of the group |
 | `qwe rebase <file-path>` | Revert file to its base version |
 | `qwe diff <file-path>` | Shows latest uncommitted and last committed version diff |
 | `qwe diff <file-path> <commit_id_1> <commit_id_2>` | Shows version diff of commit_id_1 & commit_id_2|
