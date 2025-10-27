@@ -309,7 +309,7 @@ func CurrentCommit(filePath string) error {
 }
 
 // Prints current group commit details
-func CurrentGroupCommit(groupName string) error {
+func GroupCommitDetails(groupName string, commitNumber int) error {
 
 	// Get group tracker
 	_, groupTracker, err := tr.GetTracker(1)
@@ -325,10 +325,23 @@ func CurrentGroupCommit(groupName string) error {
 		return er.InvalidGroup
 	}
 
-	// Get the commit id of current version from the group tracker
+	// Get the commit id of specific version from the group tracker
 	var commitID int
+
+	// stores commit UID
+	var commit string
+
+	if commitNumber == -1 {
+		commit = val.Current
+	} else {
+		if commitNumber > len(val.VersionOrder)-1 {
+			return er.InvalidCommitNo
+		}
+		commit = val.VersionOrder[commitNumber]
+	}
+
 	for i, e := range val.VersionOrder {
-		if e == val.Current {
+		if e == commit {
 			commitID = i
 			break
 		}
@@ -337,8 +350,8 @@ func CurrentGroupCommit(groupName string) error {
 	// Print current commit details
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Fprintf(w, "\nName:\t %s\nCurrent Commit ID:\t %d\nCommit Message:\t %s\n", val.GroupName, commitID, val.Versions[val.Current].CommitMessage)
-	files := val.Versions[val.Current].Files
+	fmt.Fprintf(w, "\nName:\t %s\nCurrent Commit ID:\t %d\nCommit Message:\t %s\n", val.GroupName, commitID, val.Versions[commit].CommitMessage)
+	files := val.Versions[commit].Files
 	fmt.Fprintf(w, "\nAssociated files:\n")
 	for e := range files {
 		fmt.Fprintf(w, "File: %s, \tCommitID: %d\n", files[e].FileName, files[e].CommitNumber)

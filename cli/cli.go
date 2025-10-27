@@ -243,11 +243,21 @@ func HandleArgs() error {
 			}
 		case "group-current":
 			{
-				if len(command_list) != 2 {
+				if len(command_list) != 2 && len(command_list) != 3 {
 					return er.CLIGrpCurrentErr
 				}
-				if err := cm.CurrentGroupCommit(command_list[1]); err != nil {
-					return err
+				if len(command_list) == 2 {
+					if err := cm.GroupCommitDetails(command_list[1], -1); err != nil {
+						return err
+					}
+				} else if len(command_list) == 3 {
+					commitNumber, err := strconv.Atoi(command_list[2])
+					if err != nil {
+						return er.InvalidCommitNo
+					}
+					if err := cm.GroupCommitDetails(command_list[1], commitNumber); err != nil {
+						return err
+					}
 				}
 			}
 		case "recover":
