@@ -406,10 +406,6 @@
 <p>A key design choice in <code>qwe</code> is the persistence of file-level tracking, even within a group. This gives you unparalleled flexibility.</p>
 <p>Example: Imagine you are tracking files A, B, and C in a group called "Feature-A." You still have the freedom to commit an independent revision for file A alone without affecting the group's snapshot history for B and C.</p>
 <p><code>qwe</code> simply groups the current commits of all the files tracked in a group. Hence under-the-hood every version of every single file is preserved. So, when you <code>group-revert</code>, <code>qwe</code> checks the commits of each file associated with that group commit and reverts the files individually to the associated versions.</p>
-<div align="center">
-  <img src="../../assets/qwe-diagram.png" alt="qwe diagram Logo">
-</div>
-
 <p>This means you can:</p>
 <ul>
 <li>Maintain a clean, unified history for all files in the group (the Group Snapshot).</li>
