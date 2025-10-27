@@ -1,0 +1,39 @@
+site_name: qwe
+site_url: https://mainak55512.github.io/qwe/
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.selections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Dark mode
+      primary: teal
+      accent: purple
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Light mode
+      primary: teal
+      accent: lime
+plugins:
+  - social
+  - search
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/mainak55512
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/mainak-bhattacharjee-10773923a
+copyright: |
+  &copy; 2025 <a href="https://github.com/mainak55512" target="_blank" rel="noopener">Mainak Bhattacharjee</a>
