@@ -54,7 +54,7 @@ var (
 	CLIGrpRevertErr    = new(33, "group-revert command accepts 'group name' and 'commit number' as arguments!")
 	CLIDiffErr         = new(34, "diff command accepts 'file path' as argument or 'file path' and two commit numbers as arguments!")
 	CLICurrentErr      = new(35, "current command only accepts 'file path' as argument!")
-	CLIGrpCurrentErr   = new(36, "group-current command only accepts 'group name' as argument!")
+	CLIGrpCurrentErr   = new(36, "group-current command only accepts either 'group name' as argument or 'group name' and 'commit number' as required arguments!")
 	CLIRecoverErr      = new(37, "recover command only accepts 'file path' as argument!")
 	CLIRebaseErr       = new(38, "rebase command only accepts 'file path' as argument!")
 	NoFileOrDiff       = new(39, "File does not exist or no changes found with the previous commit!")
