@@ -32,17 +32,6 @@ Track individual files with precision, group them seamlessly, and commit or reve
   <img src="./assets/qwe-diagram.png" alt="qwe diagram Logo">
 </div>
 
-A key design choice in qwe is the persistence of file-level tracking, even within a group. This gives you unparalleled flexibility.
-
-Example: Imagine you are tracking files A, B, and C in a group called "Feature-A." You still have the freedom to commit an independent revision for file A alone without affecting the group's snapshot history for B and C.
-
-This means you can:
-
-- Maintain a clean, unified history for all files in the group (the Group Snapshot).
-- Still perform granular, single-file rollbacks or commits outside the group's scope.
-
-This approach ensures that qwe remains the flexible, non-intrusive file revision system that you can rely on.
-
 ## Installation
 
 You can install **qwe** in two ways:
@@ -57,63 +46,25 @@ Make sure your Go environment’s `GOPATH/bin` is added to your system `PATH`.
 ### 2️⃣ Using Prebuilt Executables
 Download the prebuilt binary for your platform from the **[Releases](https://github.com/mainak55512/qwe/releases)** section of this repository and add it to your PATH.
 
-
-## Commands
-
-| Command | Description |
-|----------|-------------|
-| `qwe` | Shows all the available commands |
-| `qwe init` | Initialize qwe in the current directory |
-| `qwe group-init <group name>` | Initialize a group in the current directory |
-| `qwe groups` | List all the groups tracked in the repository |
-| `qwe track <file-path>` | Start tracking a file |
-| `qwe group-track <group name> <file-path>` | Start tracking a file in a group |
-| `qwe list <file-path>` | List all commits for the specified file |
-| `qwe group-list <group name>` | List all commits for the specified group |
-| `qwe commit <file-path> "<commit message>"` | Commit changes to the file with a message |
-| `qwe group-commit <group name> "<commit message>"` | Commit changes of all the files tracked in the group with a message |
-| `qwe revert <file-path>` | Revert the file to the last committed version |
-| `qwe revert <file-path> <commit-id>` | Revert the file to a previous version |
-| `qwe group-revert <group name> <commit-id>` | Revert the files tracked in the group to a previous version |
-| `qwe current <file-path>` | Shows current commit details of the specified file |
-| `qwe group-current <group name>` | Shows current commit details of the specified group |
-| `qwe group-current <group name> <commit-id>` | Get commit details of a specific commit of the group |
-| `qwe rebase <file-path>` | Revert file to its base version |
-| `qwe recover <file-path>` | Restore a file if it was earlier tracked |
-| `qwe diff <file-path>` | Shows latest uncommitted and last committed version diff |
-| `qwe diff <file-path> <commit_id_1> <commit_id_2>` | Shows version diff of commit_id_1 & commit_id_2|
-| `qwe diff <file-path> uncommitted <commit_id>` | Shows version diff of latest uncommitted version and commit_id version|
-
-
 ## Example Usage
 
-*Tracking single file*
 ```bash
 qwe init
 qwe track notes.txt
 qwe commit notes.txt "Initial notes added" // -> commitID 0
 qwe commit notes.txt "Updated with new ideas" // -> commitID 1
-qwe commit notes.txt "Removed already executed ideas" // -> commitID 2
-qwe list notes.txt
-qwe revert notes.txt 1
-qwe current notes.txt
-qwe diff notes.txt
-qwe rebase notes.txt
-```
-
-*Tracking a group*
-```bash
-qwe init
+qwe revert notes.txt 0
 qwe group-init new_group
 qwe group-track new_group notes.txt
 qwe group-track new_group example.txt
-qwe group-track new_group README.md
-qwe group-commit new_group "Initial commit" // -> commitID 0
-qwe group-commit new_group "Updated commit" // -> commitID 1
-qwe group-list new_group
-qwe group-revert new_group 0
-qwe group-current new_group
+qwe group-commit new_group "Initial commit" // -> commitID 1
+qwe group-commit new_group "Updated commit" // -> commitID 2
+qwe group-revert new_group 0 // -> Revert back to base version (to the version from which group tracking started)
 ```
+
+## Documentation
+
+Full documentation is available [here](https://mainak55512.github.io/qwe/).
 
 ## Why qwe?
 
