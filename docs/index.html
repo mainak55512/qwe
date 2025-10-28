@@ -438,26 +438,29 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 <li><code>qwe init</code> - Initiate a qwe repo</li>
 <li><code>qwe track notes.txt</code> - Track 'notes.txt'</li>
 <li><code>qwe commit notes.txt "Initial notes added"</code> - Commit changes of 'note.txt', commitID will be 0</li>
-<li><code>qwe commit notes.txt "Updated with new ideas"</code> - Commit changes of 'note.txt', commitID will be 1</li>
-<li><code>qwe commit notes.txt "Removed already executed ideas"</code> - Commit changes of 'note.txt', commitID will be 2</li>
 <li><code>qwe list notes.txt</code> - List all the commits of 'note.txt'</li>
-<li><code>qwe revert notes.txt 1</code> - Revert 'notes.txt' to commitID 1</li>
+<li><code>qwe revert notes.txt</code> - Revert 'notes.txt' to the latest committed version</li>
+<li><code>qwe revert notes.txt 0</code> - Revert 'notes.txt' to commitID 0</li>
 <li><code>qwe current notes.txt</code> - Check the current commit on 'notes.txt'</li>
 <li><code>qwe diff notes.txt</code> - Check difference of uncommitted changes with last commit of 'notes.txt'</li>
+<li><code>qwe diff notes.txt uncommitted 0</code> - Check difference of uncommitted changes with the specified commit version of 'notes.txt'</li>
+<li><code>qwe diff notes.txt 0 1</code> - Check difference between two commit versions of 'notes.txt'</li>
 <li><code>qwe rebase notes.txt</code> - Revert 'notes.txt' to the base version (the version from which qwe started tracking)</li>
+<li><code>qwe recover some_deleted_file.go</code> - Restores a deleted file if it was earlier tracked by qwe</li>
 </ul>
 <p><strong>Tracking a group</strong></p>
 <ul>
 <li><code>qwe init</code> - Initiate a qwe repo</li>
 <li><code>qwe group-init new_group</code> - Initiate a group 'new_group' in the repo, creates commitID 0</li>
+<li><code>qwe groups</code> - List all the groups present in the qwe repository</li>
 <li><code>qwe group-track new_group notes.txt</code> - Add 'notes.txt' to 'new_group' for tracking</li>
 <li><code>qwe group-track new_group example.txt</code> - Add 'example.txt' to 'new_group' for tracking</li>
-<li><code>qwe group-track new_group README.md</code> - Add 'README.md' to 'new_group' for tracking</li>
 <li><code>qwe group-commit new_group "Initial commit"</code> - Commit all the files of 'new_group', commitID will be 1</li>
 <li><code>qwe group-commit new_group "Updated commit"</code> - Commit all the files of 'new_group', commitID will be 2</li>
 <li><code>qwe group-list new_group</code> - Lists all the commits of 'new_group'</li>
-<li><code>qwe group-revert new_group 0</code> - Reverts all files to commitID 0</li>
+<li><code>qwe group-revert new_group 0</code> - Reverts all files to commitID 0 (the version from which qwe started tracking the group)</li>
 <li><code>qwe group-current new_group</code> - Shows current commit version of 'new_group'</li>
+<li><code>qwe group-current new_group 1</code> - Shows commit details of the specified version of 'new_group'</li>
 </ul>
 
 
