@@ -64,7 +64,7 @@ qwe group-revert new_group 0 // -> Revert back to base version (to the version f
 
 ## Documentation
 
-Full documentation is available [here](https://mainak55512.github.io/qwe/).
+Full documentation is available at [https://mainak55512.github.io/qwe](https://mainak55512.github.io/qwe/).
 
 ## Why qwe?
 
