@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -201,29 +202,65 @@ func StartTracking(filePath string) (string, error) {
 func StartGroupTracking(groupName, filePath string) error {
 
 	// Get tracker details
-	tracker, _, err := GetTracker(0)
-	if err != nil {
-		return err
-	}
-
-	// Get tracker details
 	_, groupTracker, err := GetTracker(1)
 	if err != nil {
 		return err
 	}
+	if utl.FolderExists(filePath) {
+		err := filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() && path != filePath {
+				return filepath.SkipDir
+			}
+			if !info.IsDir() {
+				groupTracker, err = fileTracker(path, groupName, groupTracker)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		groupTracker, err = fileTracker(filePath, groupName, groupTracker)
+		if err != nil {
+			return err
+		}
+	}
 
+	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
+	if err != nil {
+		return er.CommitUnsuccessful
+	}
+
+	// Update the tracker
+	if err = SaveTracker(1, marshalContent); err != nil {
+		return err
+	}
+	return nil
+}
+
+func fileTracker(filePath string, groupName string, groupTracker GroupTrackerSchema) (GroupTrackerSchema, error) {
+	// Get tracker details
+	tracker, _, err := GetTracker(0)
+	if err != nil {
+		return groupTracker, err
+	}
 	fileId := utl.Hasher(filePath)
 	groupId := utl.Hasher(groupName)
-
 	f, ok := tracker[fileId]
 	if ok { // If the file is already tracked, get the current version and update the group tracker
 		val, ok := groupTracker[groupId]
 		if !ok {
-			return er.InvalidGroup
+			return groupTracker, er.InvalidGroup
 		}
 		_, ok = val.Versions[val.Current].Files[fileId]
 		if ok {
-			return fmt.Errorf("File %s is already tracked in group %s", filePath, groupName)
+			return groupTracker, fmt.Errorf("File %s is already tracked in group %s", filePath, groupName)
 		}
 		var commitNumber int
 
@@ -247,11 +284,11 @@ func StartGroupTracking(groupName, filePath string) error {
 	} else { // If file is not tracked, then track the file first
 		fileObjectId, err := StartTracking(filePath)
 		if err != nil {
-			return err
+			return groupTracker, err
 		}
 		val, ok := groupTracker[groupId]
 		if !ok {
-			return er.InvalidGroup
+			return groupTracker, er.InvalidGroup
 		}
 
 		// As the file is first time tracked, the commit id is set to -2, that indicates, in case of revert, need to revert back to base version
@@ -262,14 +299,5 @@ func StartGroupTracking(groupName, filePath string) error {
 		}
 		groupTracker[groupId] = val
 	}
-	marshalContent, err := json.MarshalIndent(groupTracker, "", " ")
-	if err != nil {
-		return er.CommitUnsuccessful
-	}
-
-	// Update the tracker
-	if err = SaveTracker(1, marshalContent); err != nil {
-		return err
-	}
-	return nil
+	return groupTracker, nil
 }

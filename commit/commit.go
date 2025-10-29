@@ -80,6 +80,9 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		if diff_content == "" {
 			if !current_scanner.Scan() {
 				os.Remove(target)
+				if strings.HasPrefix(val.Current, "_base_") && len(val.Versions) == 0 {
+					return val.Base, -2, er.NoFileOrDiff
+				}
 				return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 			}
 		}
