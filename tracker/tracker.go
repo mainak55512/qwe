@@ -290,6 +290,7 @@ func fileTracker(filePath string, groupName string, groupTracker GroupTrackerSch
 			FileObjID:    f.Current,
 		}
 		groupTracker[groupId] = val
+		fmt.Println("Started tracking", filePath, "for group", groupName)
 	} else { // If file is not tracked, then track the file first
 		fileObjectId, err := StartTracking(filePath)
 		if err != nil {
