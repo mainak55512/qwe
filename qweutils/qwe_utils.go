@@ -6,8 +6,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	er "github.com/mainak55512/qwe/qwerror"
+	"io"
 	"io/fs"
 	"os"
+	"unicode"
 )
 
 // Encodes strings to base64
@@ -57,4 +60,27 @@ func FileExists(filePath string) bool {
 		return false
 	}
 	return false
+}
+
+// Checks if the file is a text type or binary type, returns true if binary type
+func CheckBinFile(filePath string) (bool, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false, er.InvalidFile
+	}
+	defer file.Close()
+
+	buffer := make([]byte, 1024)
+
+	size, err := io.ReadFull(file, buffer)
+	if err != nil && !(errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF)) {
+		return false, err
+	}
+	for i := 0; i < size; i++ {
+		runeValue := rune(buffer[i])
+		if buffer[i] == 0 && !unicode.IsSpace(runeValue) && !unicode.IsPrint(runeValue) {
+			return true, nil
+		}
+	}
+	return false, nil
 }

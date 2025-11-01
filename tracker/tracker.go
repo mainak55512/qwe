@@ -3,6 +3,7 @@ package tracker
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -147,10 +148,18 @@ func SaveTracker(trackerType int, content []byte) error {
 // Creates an entry for the file in Tracker and generates a base varient of the file
 func StartTracking(filePath string) (string, error) {
 
+	isBin, err := utl.CheckBinFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	if isBin {
+		return "", er.BinFileErr
+	}
 	// Get tracker details
 	tracker, _, err := GetTracker(0)
 	if err != nil {
-		return "", err
+		return "", er.InvalidFile
 	}
 
 	fileId := utl.Hasher(filePath)
@@ -216,7 +225,7 @@ func StartGroupTracking(groupName, filePath string) error {
 			}
 			if !info.IsDir() {
 				groupTracker, err = fileTracker(path, groupName, groupTracker)
-				if err != nil {
+				if err != nil && !errors.Is(err, er.BinFileErr) {
 					return err
 				}
 			}
@@ -281,6 +290,7 @@ func fileTracker(filePath string, groupName string, groupTracker GroupTrackerSch
 			FileObjID:    f.Current,
 		}
 		groupTracker[groupId] = val
+		fmt.Println("Started tracking", filePath, "for group", groupName)
 	} else { // If file is not tracked, then track the file first
 		fileObjectId, err := StartTracking(filePath)
 		if err != nil {

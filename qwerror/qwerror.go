@@ -59,4 +59,5 @@ var (
 	CLIRebaseErr       = new(38, "rebase command only accepts 'file path' as argument!")
 	NoFileOrDiff       = new(39, "File does not exist or no changes found with the previous commit!")
 	GrpNameListErr     = new(40, "groups command takes no arguments!")
+	BinFileErr         = new(41, "Filetype is not supported yet!")
 )
