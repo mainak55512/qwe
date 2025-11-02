@@ -371,6 +371,156 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#init" class="md-nav__link">
+    <span class="md-ellipsis">
+      init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#track" class="md-nav__link">
+    <span class="md-ellipsis">
+      track
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      commit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revert" class="md-nav__link">
+    <span class="md-ellipsis">
+      revert
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current" class="md-nav__link">
+    <span class="md-ellipsis">
+      current
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diff" class="md-nav__link">
+    <span class="md-ellipsis">
+      diff
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rebase" class="md-nav__link">
+    <span class="md-ellipsis">
+      rebase
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recover" class="md-nav__link">
+    <span class="md-ellipsis">
+      recover
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-init
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-track
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-commit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-list
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-revert" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-revert
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group-current" class="md-nav__link">
+    <span class="md-ellipsis">
+      group-current
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -433,34 +583,136 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 <li><code>diff</code> - Shows differences between two commits of a file</li>
 </ul>
 <h2 id="usage">Usage</h2>
-<p><strong>Tracking single file</strong></p>
+<h3 id="init">init</h3>
+<hr />
+<p><strong>Description</strong>: <code>init</code> command initiates a <code>qwe</code> repository in the current directory.</p>
+<p><strong>Arguments</strong>: It doesn't take any argument.</p>
+<p><strong>Command</strong>: <code>qwe init</code>.</p>
+<p><strong>Example</strong>: <code>qwe init</code>.</p>
+<h3 id="track">track</h3>
+<hr />
+<p><strong>Description</strong>: <code>track</code> command starts tracking the base version of a file.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the only argument.</p>
+<p><strong>Command</strong>: <code>qwe track [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe track main.go</code>.</p>
+<h3 id="commit">commit</h3>
+<hr />
+<p><strong>Description</strong>: <code>commit</code> command commits the changes of a file.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> and a <code>commit message</code> as arguments.</p>
+<p><strong>Command</strong>: <code>qwe commit [file-path] [commit-message]</code>.</p>
+<p><strong>Example</strong>: <code>qwe commit main.go "Example commit"</code>.</p>
+<h3 id="list">list</h3>
+<hr />
+<p><strong>Description</strong>: <code>list</code> command lists all the commits of the file.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe list [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe list main.go</code>.</p>
+<h3 id="revert">revert</h3>
+<hr />
+<p><strong>Description</strong>: <code>revert</code> command reverts the changes of the file.</p>
+<p><strong>Arguments</strong>: It can take upto <code>two</code> arguments: <code>file-path</code>, <code>commit-number</code></p>
+<p><strong>Command</strong>: <code>qwe revert [file-path] [commit-number]</code>.</p>
+<p><strong>Example</strong>:</p>
 <ul>
-<li><code>qwe init</code> - Initiate a qwe repo</li>
-<li><code>qwe track notes.txt</code> - Track 'notes.txt'</li>
-<li><code>qwe commit notes.txt "Initial notes added"</code> - Commit changes of 'note.txt', commitID will be 0</li>
-<li><code>qwe list notes.txt</code> - List all the commits of 'note.txt'</li>
-<li><code>qwe revert notes.txt</code> - Revert 'notes.txt' to the latest committed version</li>
-<li><code>qwe revert notes.txt 0</code> - Revert 'notes.txt' to commitID 0</li>
-<li><code>qwe current notes.txt</code> - Check the current commit on 'notes.txt'</li>
-<li><code>qwe diff notes.txt</code> - Check difference of uncommitted changes with last commit of 'notes.txt'</li>
-<li><code>qwe diff notes.txt uncommitted 0</code> - Check difference of uncommitted changes with the specified commit version of 'notes.txt'</li>
-<li><code>qwe diff notes.txt 0 1</code> - Check difference between two commit versions of 'notes.txt'</li>
-<li><code>qwe rebase notes.txt</code> - Revert 'notes.txt' to the base version (the version from which qwe started tracking)</li>
-<li><code>qwe recover some_deleted_file.go</code> - Restores a deleted file if it was earlier tracked by qwe</li>
+<li>
+<p><code>qwe revert main.go</code>: this will revert main.go to its latest committed version.</p>
+</li>
+<li>
+<p><code>qwe revert main.go 2</code>: this will revert main.go to its <code>2nd committed version</code>.</p>
+</li>
 </ul>
-<p><strong>Tracking a group</strong></p>
+<h3 id="current">current</h3>
+<hr />
+<p><strong>Description</strong>: <code>current</code> command shows the details of the current commit of the file.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe current [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe current main.go</code>.</p>
+<h3 id="diff">diff</h3>
+<hr />
+<p><strong>Description</strong>: <code>diff</code> command shows the difference between two commits of a file.</p>
+<p><strong>Arguments</strong>: It takes upto <code>three</code> arguments. <code>file-path</code>, <code>first-commit-number</code>, <code>second-commit-number</code></p>
+<p><strong>Command</strong>: <code>qwe diff [file-path] [first-commit-number] [second-commit-number]</code>.</p>
+<p><strong>Example</strong>:</p>
 <ul>
-<li><code>qwe init</code> - Initiate a qwe repo</li>
-<li><code>qwe group-init new_group</code> - Initiate a group 'new_group' in the repo, creates commitID 0</li>
-<li><code>qwe groups</code> - List all the groups present in the qwe repository</li>
-<li><code>qwe group-track new_group notes.txt</code> - Add 'notes.txt' to 'new_group' for tracking</li>
-<li><code>qwe group-track new_group example.txt</code> - Add 'example.txt' to 'new_group' for tracking</li>
-<li><code>qwe group-commit new_group "Initial commit"</code> - Commit all the files of 'new_group', commitID will be 1</li>
-<li><code>qwe group-commit new_group "Updated commit"</code> - Commit all the files of 'new_group', commitID will be 2</li>
-<li><code>qwe group-list new_group</code> - Lists all the commits of 'new_group'</li>
-<li><code>qwe group-revert new_group 0</code> - Reverts all files to commitID 0 (the version from which qwe started tracking the group)</li>
-<li><code>qwe group-current new_group</code> - Shows current commit version of 'new_group'</li>
-<li><code>qwe group-current new_group 1</code> - Shows commit details of the specified version of 'new_group'</li>
+<li>
+<p><code>qwe diff main.go</code>: this will show the difference between the uncommitted and latest committed version of main.go.</p>
+</li>
+<li>
+<p><code>qwe diff main.go 1 2</code>: this will show difference of commit 1 and 2 of main.go</p>
+</li>
+<li>
+<p><code>qwe diff main.go uncommitted 0</code>: this will show difference of uncommitted and 0th committed version of main.go.</p>
+</li>
+</ul>
+<h3 id="rebase">rebase</h3>
+<hr />
+<p><strong>Description</strong>: <code>rebase</code> command reverts the file back to its base version (the version from which qwe started tracking).</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe rebase [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe rebase main.go</code>.</p>
+<h3 id="recover">recover</h3>
+<hr />
+<p><strong>Description</strong>: <code>recover</code> command restores a deleted file if it was earlier tracked by qwe.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe recover [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe recover main.go</code>.</p>
+<h3 id="group-init">group-init</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-init</code> command initiate a logical group in the repo, creates an initial commit for the group with id 0.</p>
+<p><strong>Arguments</strong>: It takes <code>group-name</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe group-init [group-name]</code>.</p>
+<p><strong>Example</strong>: <code>qwe group-init new-group</code>.</p>
+<h3 id="group-track">group-track</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-track</code> command starts tracking a file or all files of a directory in a logical group.</p>
+<p><strong>Arguments</strong>: It takes <code>group-name</code> and <code>file-path</code> or <code>folder-path</code> as arguments.</p>
+<p><strong>Command</strong>: <code>qwe group-track [group-name] [file/folder-path]</code>.</p>
+<p><strong>Example</strong>:</p>
+<ul>
+<li>
+<p><code>qwe group-track new-group main.go</code>: this starts tracking <code>main.go</code> file in <code>new-group</code>.</p>
+</li>
+<li>
+<p><code>qwe group-track new-group script-folder</code>: this starts tracking all the files (not from sub-directories) of <code>script-folder</code>directory in <code>new-group</code>.</p>
+</li>
+</ul>
+<h3 id="group-commit">group-commit</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-commit</code> command commits all the changes of all the files tracked by a logical group.</p>
+<p><strong>Arguments</strong>: It takes <code>group-name</code> and <code>commit-message</code> as arguments.</p>
+<p><strong>Command</strong>: <code>qwe group-commit [group-name] [commit-message]</code>.</p>
+<p><strong>Example</strong>: <code>qwe group-commit new-group "Example commit"</code>.</p>
+<h3 id="group-list">group-list</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-list</code> command lists all the commits of the specified group.</p>
+<p><strong>Arguments</strong>: It takes <code>group-name</code> as the argument.</p>
+<p><strong>Command</strong>: <code>qwe group-list [group-name]</code>.</p>
+<p><strong>Example</strong>: <code>qwe group-list new-group</code>.</p>
+<h3 id="group-revert">group-revert</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-revert</code> command reverts all the files tracked in a group to a specified commit.</p>
+<p><strong>Arguments</strong>: It takes <code>group-name</code> and <code>commit-number</code> as arguments.</p>
+<p><strong>Command</strong>: <code>qwe group-revert [group-name] [commit-number]</code>.</p>
+<p><strong>Example</strong>: <code>qwe group-revert new-group 1</code>.</p>
+<h3 id="groups">groups</h3>
+<hr />
+<p><strong>Description</strong>: <code>groups</code> command lists all the groups present in the qwe repository.</p>
+<p><strong>Arguments</strong>: It doesn't take any argument.</p>
+<p><strong>Command</strong>: <code>qwe groups</code>.</p>
+<p><strong>Example</strong>: <code>qwe groups</code>.</p>
+<h3 id="group-current">group-current</h3>
+<hr />
+<p><strong>Description</strong>: <code>group-current</code> command shows commit details of a specific group including all the tracked files in it.</p>
+<p><strong>Arguments</strong>: It takes upto <code>two</code> arguments. <code>group-name</code>, <code>commit-number</code></p>
+<p><strong>Command</strong>: <code>qwe group-current [group-name] [commit-number]</code>.</p>
+<p><strong>Example</strong>:</p>
+<ul>
+<li>
+<p><code>qwe group-current new-group</code>: this shows current commit version of <code>new-group</code>.</p>
+</li>
+<li>
+<p><code>qwe group-current new-group 1</code>: this shows commit details of specified commit number.</p>
+</li>
 </ul>
 
 
