@@ -208,36 +208,39 @@ func StartTracking(filePath string) (string, error) {
 }
 
 // Start tracking a file in a group
-func StartGroupTracking(groupName, filePath string) error {
+func StartGroupTracking(groupName string, filePathList []string) error {
 
 	// Get tracker details
 	_, groupTracker, err := GetTracker(1)
 	if err != nil {
 		return err
 	}
-	if utl.FolderExists(filePath) {
-		err := filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
+
+	for _, filePath := range filePathList {
+		if utl.FolderExists(filePath) {
+			err := filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() && path != filePath {
+					return filepath.SkipDir
+				}
+				if !info.IsDir() {
+					groupTracker, err = fileTracker(path, groupName, groupTracker)
+					if err != nil && !errors.Is(err, er.BinFileErr) {
+						return err
+					}
+				}
+				return nil
+			})
 			if err != nil {
 				return err
 			}
-			if info.IsDir() && path != filePath {
-				return filepath.SkipDir
+		} else {
+			groupTracker, err = fileTracker(filePath, groupName, groupTracker)
+			if err != nil {
+				return err
 			}
-			if !info.IsDir() {
-				groupTracker, err = fileTracker(path, groupName, groupTracker)
-				if err != nil && !errors.Is(err, er.BinFileErr) {
-					return err
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-	} else {
-		groupTracker, err = fileTracker(filePath, groupName, groupTracker)
-		if err != nil {
-			return err
 		}
 	}
 
