@@ -46,32 +46,197 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 
 ## Usage
 
-**Tracking single file**
+### init
+---
 
-* `qwe init` - Initiate a qwe repo
-* `qwe track notes.txt` - Track 'notes.txt'
-* `qwe commit notes.txt "Initial notes added"` - Commit changes of 'note.txt', commitID will be 0
-* `qwe list notes.txt` - List all the commits of 'note.txt'
-* `qwe revert notes.txt` - Revert 'notes.txt' to the latest committed version
-* `qwe revert notes.txt 0` - Revert 'notes.txt' to commitID 0
-* `qwe current notes.txt` - Check the current commit on 'notes.txt'
-* `qwe diff notes.txt` - Check difference of uncommitted changes with last commit of 'notes.txt'
-* `qwe diff notes.txt uncommitted 0` - Check difference of uncommitted changes with the specified commit version of 'notes.txt'
-* `qwe diff notes.txt 0 1` - Check difference between two commit versions of 'notes.txt'
-* `qwe rebase notes.txt` - Revert 'notes.txt' to the base version (the version from which qwe started tracking)
-* `qwe recover some_deleted_file.go` - Restores a deleted file if it was earlier tracked by qwe
+**Description**: `init` command initiates a `qwe` repository in the current directory.
 
-**Tracking a group**
+**Arguments**: It doesn't take any argument.
 
-* `qwe init` - Initiate a qwe repo
-* `qwe group-init new_group` - Initiate a group 'new_group' in the repo, creates commitID 0
-* `qwe groups` - List all the groups present in the qwe repository
-* `qwe group-track new_group notes.txt` - Add 'notes.txt' to 'new_group' for tracking
-* `qwe group-track new_group example.txt` - Add 'example.txt' to 'new_group' for tracking
-* `qwe group-commit new_group "Initial commit"` - Commit all the files of 'new_group', commitID will be 1
-* `qwe group-commit new_group "Updated commit"` - Commit all the files of 'new_group', commitID will be 2
-* `qwe group-list new_group` - Lists all the commits of 'new_group'
-* `qwe group-revert new_group 0` - Reverts all files to commitID 0 (the version from which qwe started tracking the group)
-* `qwe group-current new_group` - Shows current commit version of 'new_group'
-* `qwe group-current new_group 1` - Shows commit details of the specified version of 'new_group'
+**Command**: `qwe init`.
+
+**Example**: `qwe init`.
+
+### track
+---
+
+**Description**: `track` command starts tracking the base version of a file.
+
+**Arguments**: It takes `file-path` as the only argument.
+
+**Command**: `qwe track [file-path]`.
+
+**Example**: `qwe track main.go`.
+
+### commit
+---
+
+**Description**: `commit` command commits the changes of a file.
+
+**Arguments**: It takes `file-path` and a `commit message` as arguments.
+
+**Command**: `qwe commit [file-path] [commit-message]`.
+
+**Example**: `qwe commit main.go "Example commit"`.
+
+### list
+---
+
+**Description**: `list` command lists all the commits of the file.
+
+**Arguments**: It takes `file-path` as the argument.
+
+**Command**: `qwe list [file-path]`.
+
+**Example**: `qwe list main.go`.
+
+### revert
+---
+
+**Description**: `revert` command reverts the changes of the file.
+
+**Arguments**: It can take upto `two` arguments: `file-path`, `commit-number`
+
+**Command**: `qwe revert [file-path] [commit-number]`.
+
+**Example**:
+
+- `qwe revert main.go`: this will revert main.go to its latest committed version.
+
+- `qwe revert main.go 2`: this will revert main.go to its `2nd committed version`.
+
+### current
+---
+
+**Description**: `current` command shows the details of the current commit of the file.
+
+**Arguments**: It takes `file-path` as the argument.
+
+**Command**: `qwe current [file-path]`.
+
+**Example**: `qwe current main.go`.
+
+### diff
+---
+
+**Description**: `diff` command shows the difference between two commits of a file.
+
+**Arguments**: It takes upto `three` arguments. `file-path`, `first-commit-number`, `second-commit-number`
+
+**Command**: `qwe diff [file-path] [first-commit-number] [second-commit-number]`.
+
+**Example**:
+
+- `qwe diff main.go`: this will show the difference between the uncommitted and latest committed version of main.go.
+
+- `qwe diff main.go 1 2`: this will show difference of commit 1 and 2 of main.go
+
+- `qwe diff main.go uncommitted 0`: this will show difference of uncommitted and 0th committed version of main.go.
+
+### rebase
+---
+
+**Description**: `rebase` command reverts the file back to its base version (the version from which qwe started tracking).
+
+**Arguments**: It takes `file-path` as the argument.
+
+**Command**: `qwe rebase [file-path]`.
+
+**Example**: `qwe rebase main.go`.
+
+### recover
+---
+
+**Description**: `recover` command restores a deleted file if it was earlier tracked by qwe.
+
+**Arguments**: It takes `file-path` as the argument.
+
+**Command**: `qwe recover [file-path]`.
+
+**Example**: `qwe recover main.go`.
+
+### group-init
+---
+
+**Description**: `group-init` command initiate a logical group in the repo, creates an initial commit for the group with id 0.
+
+**Arguments**: It takes `group-name` as the argument.
+
+**Command**: `qwe group-init [group-name]`.
+
+**Example**: `qwe group-init new-group`.
+
+### group-track
+---
+
+**Description**: `group-track` command starts tracking a file or all files of a directory in a logical group.
+
+**Arguments**: It takes `group-name` and `file-path` or `folder-path` as arguments.
+
+**Command**: `qwe group-track [group-name] [file/folder-path]`.
+
+**Example**:
+
+- `qwe group-track new-group main.go`: this starts tracking `main.go` file in `new-group`.
+
+- `qwe group-track new-group script-folder`: this starts tracking all the files (not from sub-directories) of `script-folder`directory in `new-group`.
+
+### group-commit
+---
+
+**Description**: `group-commit` command commits all the changes of all the files tracked by a logical group.
+
+**Arguments**: It takes `group-name` and `commit-message` as arguments.
+
+**Command**: `qwe group-commit [group-name] [commit-message]`.
+
+**Example**: `qwe group-commit new-group "Example commit"`.
+
+### group-list
+---
+
+**Description**: `group-list` command lists all the commits of the specified group.
+
+**Arguments**: It takes `group-name` as the argument.
+
+**Command**: `qwe group-list [group-name]`.
+
+**Example**: `qwe group-list new-group`.
+
+### group-revert
+---
+
+**Description**: `group-revert` command reverts all the files tracked in a group to a specified commit.
+
+**Arguments**: It takes `group-name` and `commit-number` as arguments.
+
+**Command**: `qwe group-revert [group-name] [commit-number]`.
+
+**Example**: `qwe group-revert new-group 1`.
+
+### groups
+---
+
+**Description**: `groups` command lists all the groups present in the qwe repository.
+
+**Arguments**: It doesn't take any argument.
+
+**Command**: `qwe groups`.
+
+**Example**: `qwe groups`.
+
+### group-current
+---
+
+**Description**: `group-current` command shows commit details of a specific group including all the tracked files in it.
+
+**Arguments**: It takes upto `two` arguments. `group-name`, `commit-number`
+
+**Command**: `qwe group-current [group-name] [commit-number]`.
+
+**Example**:
+
+- `qwe group-current new-group`: this shows current commit version of `new-group`.
+
+- `qwe group-current new-group 1`: this shows commit details of specified commit number.
 
