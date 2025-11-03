@@ -179,7 +179,11 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 
 - `qwe group-track new-group main.go`: this starts tracking `main.go` file in `new-group`.
 
+- `qwe group-track new-group main.go test.go README.md`: this starts tracking `main.go`, `test.go`, `README.md` file in `new-group`.
+
 - `qwe group-track new-group script-folder`: this starts tracking all the files (not from sub-directories) of `script-folder`directory in `new-group`.
+
+- `qwe group-track new-group .`: this starts tracking all files of current directory in `new-group`.
 
 ### group-commit
 ---

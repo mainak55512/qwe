@@ -55,8 +55,7 @@ qwe commit notes.txt "Initial notes added" // -> commitID 0
 qwe commit notes.txt "Updated with new ideas" // -> commitID 1
 qwe revert notes.txt 0
 qwe group-init new_group
-qwe group-track new_group notes.txt
-qwe group-track new_group example.txt
+qwe group-track new_group notes.txt example.txt README.md
 qwe group-commit new_group "Initial commit" // -> commitID 1
 qwe group-commit new_group "Updated commit" // -> commitID 2
 qwe group-revert new_group 0 // -> Revert back to base version (to the version from which group tracking started)

@@ -68,7 +68,7 @@ func helpText() {
 		`)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.2.5")
+	fmt.Println("Version: v0.2.6")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
@@ -144,10 +144,10 @@ func HandleArgs() error {
 			}
 		case "group-track":
 			{
-				if len(command_list) != 3 {
+				if len(command_list) < 3 {
 					return er.CLIGrpTrackErr
 				}
-				if err := tr.StartGroupTracking(command_list[1], command_list[2]); err != nil {
+				if err := tr.StartGroupTracking(command_list[1], command_list[2:]); err != nil {
 					return err
 				}
 			}
