@@ -3,7 +3,9 @@ package revert
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	bh "github.com/mainak55512/qwe/binaryhandler"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	rb "github.com/mainak55512/qwe/rebase"
@@ -28,16 +30,34 @@ func Revert(commitNumber int, filePath string) error {
 
 	// Check if the file is tracked
 	if val, ok := tracker[fileId]; ok {
-		target := filePath
-
 		// Check if the commit number is valid
 		if commitNumber < -1 || commitNumber > len(val.Versions)-1 {
 			return er.InvalidCommitNo
 		}
 
-		// Reconstruct the file till the specific commit number
-		if err = res.Reconstruct(val, target, commitNumber); err != nil {
-			return err
+		if len(val.Versions) == 0 {
+			return fmt.Errorf("File %s was never committed, use 'rebase' command to revert back to base version", filePath)
+		}
+
+		if strings.HasPrefix(val.Base, "_bin_") {
+			commitID := commitNumber
+			if commitNumber == -1 {
+				commitID = len(val.Versions) - 1
+			}
+
+			fileObjID := val.Versions[commitID].UID
+
+			if err = bh.RevertBinFile(filePath, fileObjID); err != nil {
+				return err
+			}
+		} else {
+
+			target := filePath
+
+			// Reconstruct the file till the specific commit number
+			if err = res.Reconstruct(val, target, commitNumber); err != nil {
+				return err
+			}
 		}
 
 		// Update the current version of the file in tracker

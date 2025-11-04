@@ -8,9 +8,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
+	// "strings"
 	"time"
 
+	bh "github.com/mainak55512/qwe/binaryhandler"
 	cp "github.com/mainak55512/qwe/compressor"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
@@ -148,14 +149,6 @@ func SaveTracker(trackerType int, content []byte) error {
 // Creates an entry for the file in Tracker and generates a base varient of the file
 func StartTracking(filePath string) (string, error) {
 
-	isBin, err := utl.CheckBinFile(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	if isBin {
-		return "", er.BinFileErr
-	}
 	// Get tracker details
 	tracker, _, err := GetTracker(0)
 	if err != nil {
@@ -167,24 +160,38 @@ func StartTracking(filePath string) (string, error) {
 	// This will be used as the name of the base file
 	fileObjectId := "_base_" + utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
+	isBin, err := utl.CheckBinFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
 	// If the file is already tracked then return error
 	if _, ok := tracker[fileId]; ok {
 		return "", er.FileTracked
 	}
 
-	base_content, err := os.ReadFile(filePath)
-	if err != nil {
-		return "", fmt.Errorf("File not found: %s", filePath)
-	}
+	if isBin {
+		// return "", er.BinFileErr
+		fileObjectId, err = bh.CommitBinFile(filePath)
+		if err != nil {
+			return "", err
+		}
+	} else {
 
-	// (Need to change to a buffered writer) write the content of the file to the base varient
-	if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
-		return "", er.TrackUnsuccessful
-	}
+		base_content, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", fmt.Errorf("File not found: %s", filePath)
+		}
 
-	// Compress the base file
-	if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
-		return "", err
+		// (Need to change to a buffered writer) write the content of the file to the base varient
+		if err := os.WriteFile(".qwe/_object/"+fileObjectId, base_content, 0644); err != nil {
+			return "", er.TrackUnsuccessful
+		}
+
+		// Compress the base file
+		if err = cp.CompressFile(".qwe/_object/" + fileObjectId); err != nil {
+			return "", err
+		}
 	}
 
 	// Add tracker entry for the file
@@ -277,7 +284,8 @@ func fileTracker(filePath string, groupName string, groupTracker GroupTrackerSch
 		var commitNumber int
 
 		// if current version of the file is a base file
-		if strings.HasPrefix(f.Current, "_base_") {
+		// if strings.HasPrefix(f.Current, "_base_") {
+		if f.Current == f.Base {
 			commitNumber = -2 // means for revert we need to revert back to base version
 		} else {
 			for i, elem := range f.Versions {
