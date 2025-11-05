@@ -160,7 +160,7 @@ func StartTracking(filePath string) (string, error) {
 	// This will be used as the name of the base file
 	fileObjectId := "_base_" + utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
 
-	isBin, err := utl.CheckBinFile(filePath)
+	isBin, err := bh.CheckBinFile(filePath)
 	if err != nil {
 		return "", err
 	}
