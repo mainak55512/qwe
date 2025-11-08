@@ -75,7 +75,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe group-init <group name>\t[Initialize a group to track multiple files]")
 	fmt.Fprintln(w, "qwe groups\t[Get list of all groups tracked in the repository]")
 	fmt.Fprintln(w, "qwe track <file-path>\t[Start tracking a file]")
-	fmt.Fprintln(w, "qwe group-track <group name> <file-path>\t[Start tracking a file in a group or all files of a folder in a group]")
+	fmt.Fprintln(w, "qwe group-track <group name> <file/folder-path>...\t[Start tracking one or more files in a group or all files of a folder in a group]")
 	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
 	fmt.Fprintln(w, "qwe group-list <group name>\t[Get list of all commits on the group]")
 	fmt.Fprintln(w, "qwe commit <file-path> \"<commit message>\"\t[Commit current version of the file to the version control]")
