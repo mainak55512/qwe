@@ -133,7 +133,13 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 
 			}
 			// Reconstruct till the current version
-			if err = res.Reconstruct(val, target, -1); err != nil {
+			var commitID int = -1
+			for i := range val.Versions {
+				if val.Versions[i].UID == val.Current {
+					commitID = i
+				}
+			}
+			if err = res.Reconstruct(val, target, commitID); err != nil {
 				return err
 			}
 		}
@@ -166,6 +172,15 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 				diff_content = append(diff_content, Changes{
 					Prev: fmt.Sprintf("- %d %s", line, current_scanner.Text()),
 					Curr: fmt.Sprintf("+ %d %s", line, new_scanner.Text()),
+				})
+			}
+		}
+		for current_scanner.Scan() {
+			line++
+			if !bytes.Equal(current_scanner.Bytes(), []byte("")) {
+				diff_content = append(diff_content, Changes{
+					Prev: fmt.Sprintf("+ %d %s", line, current_scanner.Text()),
+					Curr: fmt.Sprintf("- %d %s", line, ""),
 				})
 			}
 		}
@@ -291,6 +306,15 @@ func Diff(filePath, commitID1Str, commitID2Str string) error {
 				diff_content = append(diff_content, Changes{
 					Prev: fmt.Sprintf("- %d %s", line, current_scanner.Text()),
 					Curr: fmt.Sprintf("+ %d %s", line, new_scanner.Text()),
+				})
+			}
+		}
+		for current_scanner.Scan() {
+			line++
+			if !bytes.Equal(current_scanner.Bytes(), []byte("")) {
+				diff_content = append(diff_content, Changes{
+					Prev: fmt.Sprintf("+ %d %s", line, current_scanner.Text()),
+					Curr: fmt.Sprintf("- %d %s", line, ""),
 				})
 			}
 		}

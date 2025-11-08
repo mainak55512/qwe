@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	// "io"
 	"os"
 	"time"
 
@@ -41,7 +40,7 @@ func CommitUnit(filePath, message string) (string, int, error) {
 	// Check if file is tracked
 	if val, ok := tracker[fileId]; ok {
 		if strings.HasPrefix(val.Base, "_bin_") {
-			fileObjectId, err = bh.CommitBinFile(filePath)
+			fileObjectId, err = bh.CommitBinFile(filePath, val.Current)
 			if err != nil {
 				return "", -3, err
 			}

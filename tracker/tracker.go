@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	// "strings"
 	"time"
 
 	bh "github.com/mainak55512/qwe/binaryhandler"
@@ -172,8 +171,20 @@ func StartTracking(filePath string) (string, error) {
 
 	if isBin {
 		// return "", er.BinFileErr
-		fileObjectId, err = bh.CommitBinFile(filePath)
+		src, err := os.Open(filePath)
 		if err != nil {
+			return "", err
+		}
+		fileObjectId = "_bin_" + utl.Hasher(fmt.Sprintf("%s%d", filePath, time.Now().UnixNano()))
+		target := ".qwe/_object/" + fileObjectId
+		dest, err := os.Create(target)
+		if err != nil {
+			return "", err
+		}
+		if _, err := io.Copy(dest, src); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+			return "", err
+		}
+		if err = cp.CompressFile(target); err != nil {
 			return "", err
 		}
 	} else {
