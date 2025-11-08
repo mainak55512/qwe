@@ -2,6 +2,7 @@ package reconstruct
 
 import (
 	"bufio"
+	// bh "github.com/mainak55512/qwe/binaryhandler"
 	cp "github.com/mainak55512/qwe/compressor"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
@@ -14,6 +15,12 @@ import (
 
 // Applies previous commits till the commitID supplied on to the base version
 func Reconstruct(val tr.Tracker, target string, commitID int) error {
+	// if strings.HasPrefix(val.Base, "_bin_") {
+	// 	if err := bh.RevertBinFile(target, val.Current); err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
+	// }
 	buf := make([]byte, 1024)
 
 	// Decompress the base varient

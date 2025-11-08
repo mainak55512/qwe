@@ -3,6 +3,9 @@ package rebase
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	bh "github.com/mainak55512/qwe/binaryhandler"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
 	res "github.com/mainak55512/qwe/reconstruct"
@@ -24,6 +27,12 @@ func Rebase(filePath string) error {
 	val, ok := tracker[fileId]
 	if !ok {
 		return er.FileNotTracked
+	}
+
+	if strings.HasPrefix(val.Base, "_bin_") {
+		if err = bh.RevertBinFile(filePath, val.Base); err != nil {
+			return err
+		}
 	}
 
 	// Reconstruct the file till its base version

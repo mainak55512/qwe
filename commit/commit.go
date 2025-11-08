@@ -12,6 +12,7 @@ import (
 	"strings"
 	tw "text/tabwriter"
 
+	bh "github.com/mainak55512/qwe/binaryhandler"
 	cp "github.com/mainak55512/qwe/compressor"
 	er "github.com/mainak55512/qwe/qwerror"
 	utl "github.com/mainak55512/qwe/qweutils"
@@ -38,78 +39,93 @@ func CommitUnit(filePath, message string) (string, int, error) {
 
 	// Check if file is tracked
 	if val, ok := tracker[fileId]; ok {
-		target := ".qwe/_object/" + fileObjectId
-
-		// This is the latest version of uncommitted file changes
-		new_file, err := os.Open(filePath)
-		if err != nil {
-			// return "", -3, err // -3 means unsuccessful
-			return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
-		}
-		defer new_file.Close()
-
-		// Reconstruct the file to the latest committed version
-		// by applying all the changes to the base version
-		if err = res.Reconstruct(val, target, -1); err != nil {
-			return "", -3, err // -3 means unsuccessful
-		}
-
-		current_file, err := os.Open(target)
-		if err != nil {
-			return "", -3, err
-		}
-
-		current_scanner := bufio.NewScanner(current_file)
-
-		new_scanner := bufio.NewScanner(new_file)
-
-		var diff_content string
-
-		// Find the difference between latest uncommitted and committed versions and store that in diff_content
-		// difference is stored as <line-number> @@@ <new string value>
-		line := 0
-		for new_scanner.Scan() {
-			line++
-			current_scanner.Scan()
-			if !bytes.Equal(current_scanner.Bytes(), new_scanner.Bytes()) {
-				diff_content += fmt.Sprintf("%d @@@ %s\n", line, utl.ConvStrEnc(new_scanner.Text()))
-			}
-		}
-
-		// This ensures no redundent commits are created for the file if there is no change
-		if diff_content == "" {
-			if !current_scanner.Scan() {
-				os.Remove(target)
-				if strings.HasPrefix(val.Current, "_base_") && len(val.Versions) == 0 {
-					return val.Base, -2, er.NoFileOrDiff
+		if strings.HasPrefix(val.Base, "_bin_") {
+			fileObjectId, err = bh.CommitBinFile(filePath, val.Current)
+			if err != nil {
+				if errors.Is(err, er.NoFileOrDiff) {
+					for i := range val.Versions {
+						if val.Versions[i].UID == val.Current {
+							return "", i, err
+						}
+					}
+					return "", -2, err // this means asset is in base version
 				}
+				return "", -3, err
+			}
+		} else {
+			target := ".qwe/_object/" + fileObjectId
+
+			// This is the latest version of uncommitted file changes
+			new_file, err := os.Open(filePath)
+			if err != nil {
+				// return "", -3, err // -3 means unsuccessful
 				return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
 			}
-		}
+			defer new_file.Close()
 
-		// Adding total line number of uncommitted file on top of the diff_content
-		// This line number will be used while reconstructing the file later
-		diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
-		current_file.Close()
+			// Reconstruct the file to the latest committed version
+			// by applying all the changes to the base version
+			if err = res.Reconstruct(val, target, -1); err != nil {
+				return "", -3, err // -3 means unsuccessful
+			}
 
-		output_content, err := os.Create(target)
-		if err != nil {
-			return "", -3, err // -3 means unsuccessful
-		}
+			current_file, err := os.Open(target)
+			if err != nil {
+				return "", -3, err
+			}
 
-		output_writer := bufio.NewWriter(output_content)
-		_, err = output_writer.WriteString(diff_content)
-		if err != nil {
-			return "", -3, er.BaseWriteErr // -3 means unsuccessful
-		}
-		if err = output_writer.Flush(); err != nil {
-			return "", -3, er.OutputWriteErr // -3 means unsuccessful
-		}
-		output_content.Close()
+			current_scanner := bufio.NewScanner(current_file)
 
-		// Compressing the commit file
-		if err = cp.CompressFile(target); err != nil {
-			return "", -3, err // -3 means unsuccessful
+			new_scanner := bufio.NewScanner(new_file)
+
+			var diff_content string
+
+			// Find the difference between latest uncommitted and committed versions and store that in diff_content
+			// difference is stored as <line-number> @@@ <new string value>
+			line := 0
+			for new_scanner.Scan() {
+				line++
+				current_scanner.Scan()
+				if !bytes.Equal(current_scanner.Bytes(), new_scanner.Bytes()) {
+					diff_content += fmt.Sprintf("%d @@@ %s\n", line, utl.ConvStrEnc(new_scanner.Text()))
+				}
+			}
+
+			// This ensures no redundent commits are created for the file if there is no change
+			if diff_content == "" {
+				if !current_scanner.Scan() {
+					os.Remove(target)
+					if strings.HasPrefix(val.Current, "_base_") && len(val.Versions) == 0 {
+						return val.Base, -2, er.NoFileOrDiff
+					}
+					return val.Versions[len(val.Versions)-1].UID, len(val.Versions) - 1, er.NoFileOrDiff
+				}
+			}
+
+			// Adding total line number of uncommitted file on top of the diff_content
+			// This line number will be used while reconstructing the file later
+			diff_content = fmt.Sprintf("%d\n%s", line, diff_content)
+			current_file.Close()
+
+			output_content, err := os.Create(target)
+			if err != nil {
+				return "", -3, err // -3 means unsuccessful
+			}
+
+			output_writer := bufio.NewWriter(output_content)
+			_, err = output_writer.WriteString(diff_content)
+			if err != nil {
+				return "", -3, er.BaseWriteErr // -3 means unsuccessful
+			}
+			if err = output_writer.Flush(); err != nil {
+				return "", -3, er.OutputWriteErr // -3 means unsuccessful
+			}
+			output_content.Close()
+
+			// Compressing the commit file
+			if err = cp.CompressFile(target); err != nil {
+				return "", -3, err // -3 means unsuccessful
+			}
 		}
 
 		// Update tracker
@@ -295,7 +311,8 @@ func CurrentCommit(filePath string) error {
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
 
 	// If the current checked out version is a base file, the print the base details
-	if strings.HasPrefix(currentVersion, "_base_") {
+	// if strings.HasPrefix(currentVersion, "_base_") {
+	if currentVersion == val.Base {
 		fmt.Fprintf(w, "\nCurrent Commit ID:\tbase\nCommit Message:\tBase version\n")
 	} else {
 
