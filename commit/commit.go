@@ -42,6 +42,14 @@ func CommitUnit(filePath, message string) (string, int, error) {
 		if strings.HasPrefix(val.Base, "_bin_") {
 			fileObjectId, err = bh.CommitBinFile(filePath, val.Current)
 			if err != nil {
+				if errors.Is(err, er.NoFileOrDiff) {
+					for i := range val.Versions {
+						if val.Versions[i].UID == val.Current {
+							return "", i, err
+						}
+					}
+					return "", -2, err // this means asset is in base version
+				}
 				return "", -3, err
 			}
 		} else {
