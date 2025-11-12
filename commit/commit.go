@@ -381,16 +381,42 @@ func GroupCommitDetails(groupName string, commitNumber int) error {
 }
 
 // Shows the names of groups tracked in the current repository
-func GroupNameList() error {
+func GroupNameList(filePath string) error {
 	// Get group tracker
 	_, groupTracker, err := tr.GetTracker(1)
 	if err != nil {
 		return err
 	}
 
-	// print the group names
-	for k := range groupTracker {
-		fmt.Println(groupTracker[k].GroupName)
+	if filePath == "" {
+		// print the group names
+		for k := range groupTracker {
+			fmt.Println(groupTracker[k].GroupName)
+		}
+	} else {
+
+		tracker, _, err := tr.GetTracker(0)
+		if err != nil {
+			return err
+		}
+		fileID := utl.Hasher(filePath)
+		_, ok := tracker[fileID]
+		if !ok {
+			return er.FileNotTracked
+		}
+		var isTracked bool = false
+		for k := range groupTracker {
+			for l := range groupTracker[k].Versions[groupTracker[k].Current].Files {
+				if l == fileID {
+					fmt.Println(groupTracker[k].GroupName)
+					isTracked = true
+					break
+				}
+			}
+		}
+		if !isTracked {
+			fmt.Println("File is not associated with any group!")
+		}
 	}
 	return nil
 }

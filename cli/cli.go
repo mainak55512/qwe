@@ -68,12 +68,13 @@ func helpText() {
 		`)
 	w := new(tw.Writer)
 	w.Init(os.Stdout, 0, 0, 0, ' ', tw.TabIndent)
-	fmt.Println("Version: v0.3.0")
+	fmt.Println("Version: v0.3.1")
 	fmt.Println()
 	fmt.Println("[COMMANDS]:")
 	fmt.Fprintln(w, "qwe init\t[Initialize qwe in present directory]")
 	fmt.Fprintln(w, "qwe group-init <group name>\t[Initialize a group to track multiple files]")
 	fmt.Fprintln(w, "qwe groups\t[Get list of all groups tracked in the repository]")
+	fmt.Fprintln(w, "qwe groups <file-path>\t[Get list of all groups in which a file is tracked]")
 	fmt.Fprintln(w, "qwe track <file-path>\t[Start tracking a file]")
 	fmt.Fprintln(w, "qwe group-track <group name> <file/folder-path>...\t[Start tracking one or more files in a group or all files of a folder in a group]")
 	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
@@ -135,11 +136,17 @@ func HandleArgs() error {
 			}
 		case "groups":
 			{
-				if len(command_list) != 1 {
+				if len(command_list) < 1 || len(command_list) > 2 {
 					return er.GrpNameListErr
 				}
-				if err := cm.GroupNameList(); err != nil {
-					return err
+				if len(command_list) == 1 {
+					if err := cm.GroupNameList(""); err != nil {
+						return err
+					}
+				} else if len(command_list) == 2 {
+					if err := cm.GroupNameList(command_list[1]); err != nil {
+						return err
+					}
 				}
 			}
 		case "group-track":
