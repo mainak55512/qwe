@@ -58,6 +58,6 @@ var (
 	CLIRecoverErr      = new(37, "recover command only accepts 'file path' as argument!")
 	CLIRebaseErr       = new(38, "rebase command only accepts 'file path' as argument!")
 	NoFileOrDiff       = new(39, "File does not exist or no changes found with the previous commit!")
-	GrpNameListErr     = new(40, "groups command takes no arguments!")
+	GrpNameListErr     = new(40, "groups command takes no argument or filepath as the only argument!")
 	BinFileErr         = new(41, "Filetype is not supported yet!")
 )
