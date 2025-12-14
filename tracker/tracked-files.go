@@ -148,7 +148,8 @@ func (tf TrackFiles) Save(filename string) error {
 	}
 
 	// atomic write
-	filePath := filepath.Join(QweDir, filename)
+	// filePath := filepath.Join(QweDir, filename)
+	filePath := filename
 	tmp := filePath + ".tmp"
 
 	if err := os.WriteFile(tmp, bytes, TrackFilePermissions); err != nil {
@@ -244,9 +245,7 @@ func findTrackedFilesInCurrDir(dir string) (TrackFiles, error) {
 		return nil, err
 	}
 
-	fmt.Println("Scanning files in", dir, "...")
-
-	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	visitFolder := func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if os.IsPermission(err) {
 				fmt.Printf("Permission denied: %s\n", path)
@@ -261,7 +260,9 @@ func findTrackedFilesInCurrDir(dir string) (TrackFiles, error) {
 			if isExcludedDir(d.Name()) {
 				return fs.SkipDir
 			}
-			return nil
+			findTrackedFilesInCurrDir(path)
+			return fs.SkipDir
+			// return nil
 		}
 
 		// is file
@@ -271,7 +272,11 @@ func findTrackedFilesInCurrDir(dir string) (TrackFiles, error) {
 			trackedFiles[fileId] = NewTrackFile(path)
 		}
 		return nil
-	})
+
+	}
+	fmt.Println("Scanning files in", dir, "...")
+
+	err = filepath.WalkDir(dir, visitFolder)
 
 	if err != nil {
 		return nil, err
