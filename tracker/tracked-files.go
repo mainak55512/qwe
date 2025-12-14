@@ -140,7 +140,7 @@ func (tf TrackFiles) Print() error {
 	return nil
 }
 
-func (tf TrackFiles) Save(filename string) error {
+func (tf TrackFiles) Save() error {
 	bytes, err := json.MarshalIndent(tf, "", "  ")
 
 	if err != nil {
@@ -148,13 +148,13 @@ func (tf TrackFiles) Save(filename string) error {
 	}
 
 	// atomic write
-	// filePath := filepath.Join(QweDir, filename)
-	filePath := filename
+	filePath := filepath.Join(QweDir, FileName)
 	tmp := filePath + ".tmp"
 
 	if err := os.WriteFile(tmp, bytes, TrackFilePermissions); err != nil {
 		return fmt.Errorf("write temp file: %w", err)
 	}
+
 	if err := os.Rename(tmp, filePath); err != nil {
 		return fmt.Errorf("rename temp file: %w", err)
 	}
@@ -171,6 +171,7 @@ func InitTrackedFiles() error {
 	if err := os.WriteFile(filePath, []byte("{}"), TrackFilePermissions); err != nil {
 		return fmt.Errorf("create tracked files file: %w", err)
 	}
+
 	if err := cp.CompressFile(filePath); err != nil {
 		return fmt.Errorf("compress file: %w", err)
 	}
@@ -190,7 +191,7 @@ func UpdateTrackedFile(fileId, filePath string) error {
 	trackedFiles[fileId] = NewTrackFile(filePath)
 
 	// Save the updated tracked files
-	if err := trackedFiles.Save(FileName); err != nil {
+	if err := trackedFiles.Save(); err != nil {
 		return fmt.Errorf("save tracked files: %w", err)
 	}
 
@@ -222,12 +223,13 @@ func loadOrScanTrackedFiles(filePath string) (TrackFiles, error) {
 		return nil, err
 	}
 
-	trackedFiles, err := findTrackedFilesInCurrDir(workingDir)
+	trackedFiles := make(TrackFiles)
+	err = findTrackedFilesInCurrDir(workingDir, workingDir, &trackedFiles)
 
 	if err != nil {
 		return nil, err
 	}
-	err = trackedFiles.Save(filePath)
+	err = trackedFiles.Save()
 
 	if err != nil {
 		return nil, fmt.Errorf("save tracked files: %w", err)
@@ -236,16 +238,15 @@ func loadOrScanTrackedFiles(filePath string) (TrackFiles, error) {
 	return trackedFiles, nil
 }
 
-// scanning all directories and files to find tracking files by qwe
-func findTrackedFilesInCurrDir(dir string) (TrackFiles, error) {
-	trackedFiles := make(TrackFiles)
+func findTrackedFilesInCurrDir(dir, workingDir string, trackedFiles *TrackFiles) error {
 	tracker, _, err := GetTracker(FileTrackerType)
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	visitFolder := func(path string, d fs.DirEntry, err error) error {
+	fmt.Println("Scanning files in", dir, "...")
+
+	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if os.IsPermission(err) {
 				fmt.Printf("Permission denied: %s\n", path)
@@ -255,34 +256,31 @@ func findTrackedFilesInCurrDir(dir string) (TrackFiles, error) {
 			return err
 		}
 
-		if d.IsDir() {
-			// exclude qwe itself, git also
-			if isExcludedDir(d.Name()) {
-				return fs.SkipDir
-			}
-			findTrackedFilesInCurrDir(path)
+		if d.IsDir() && !isExcludedDir(d.Name()) && path != dir {
+			fmt.Println("Scanning files in", path, "...")
+		}
+
+		// Skip excluded directories
+		if d.IsDir() && isExcludedDir(d.Name()) && path != dir {
 			return fs.SkipDir
-			// return nil
 		}
 
-		// is file
-		fileId := utl.Hasher(d.Name())
-
-		if _, ok := tracker[fileId]; ok {
-			trackedFiles[fileId] = NewTrackFile(path)
+		// Process files only
+		if !d.IsDir() {
+			relPath, err := filepath.Rel(workingDir, path)
+			if err != nil {
+				return err
+			}
+			fileId := utl.Hasher(relPath)
+			if _, ok := tracker[fileId]; ok {
+				(*trackedFiles)[fileId] = NewTrackFile(relPath)
+			}
 		}
+
 		return nil
+	})
 
-	}
-	fmt.Println("Scanning files in", dir, "...")
-
-	err = filepath.WalkDir(dir, visitFolder)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return trackedFiles, nil
+	return err
 }
 
 // read data from file and load to memory (TrackFiles structure)
