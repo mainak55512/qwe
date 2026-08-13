@@ -77,6 +77,7 @@ func helpText() {
 	fmt.Fprintln(w, "qwe groups\t[Get list of all groups tracked in the repository]")
 	fmt.Fprintln(w, "qwe groups <file-path>\t[Get list of all groups in which a file is tracked]")
 	fmt.Fprintln(w, "qwe track <file-path>\t[Start tracking a file]")
+	fmt.Fprintln(w, "qwe untrack <file-path>\t[Stop tracking a file individually and in all groups]")
 	fmt.Fprintln(w, "qwe group-track <group name> <file/folder-path>...\t[Start tracking one or more files in a group or all files of a folder in a group]")
 	fmt.Fprintln(w, "qwe list <file-path>\t[Get list of all commits on the file]")
 	fmt.Fprintln(w, "qwe group-list <group name>\t[Get list of all commits on the group]")
@@ -142,6 +143,15 @@ func HandleArgs() error {
 					return er.CLITrackErr
 				}
 				if _, err := tr.StartTracking(command_list[1]); err != nil {
+					return err
+				}
+			}
+		case "untrack":
+			{
+				if len(command_list) != 2 {
+					return er.CLIUntrackErr
+				}
+				if err := tr.StopTracking(command_list[1]); err != nil {
 					return err
 				}
 			}

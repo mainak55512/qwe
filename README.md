@@ -15,6 +15,7 @@ Track individual files with precision, group them seamlessly, and commit or reve
 ## Features
 
 - **File-based version control** — track versions of specific files independently.  
+- **Safe untracking** — stop tracking a file without deleting the working file.
 - **Easy commits** — record changes with a simple commit message.  
 - **Revert anytime** — roll back a single file without affecting others.  
 - **Grouped snapshot** — Track multiple files with ease for collective commit and revert.
@@ -59,6 +60,7 @@ qwe group-track new_group notes.txt example.txt README.md
 qwe group-commit new_group "Initial commit" // -> commitID 1
 qwe group-commit new_group "Updated commit" // -> commitID 2
 qwe group-revert new_group 0 // -> Revert back to base version (to the version from which group tracking started)
+qwe untrack notes.txt
 ```
 
 ## Documentation
