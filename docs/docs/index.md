@@ -31,6 +31,7 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 - `group-init` - Initiates a group in a qwe repository
 - `groups` - Shows all the groups in the qwe repository
 - `track` - Tracks a file
+- `tracked` - Lists all the tracked files
 - `untrack` - Stops tracking a file individually and in all logical groups
 - `group-track` - Tracks a file in a group
 - `list` - Lists all the commits of a file
@@ -68,6 +69,17 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 **Command**: `qwe track [file-path]`.
 
 **Example**: `qwe track main.go`.
+
+### tracked
+---
+
+**Description**: `tracked` command lists all the tracked.
+
+**Arguments**: It doesn't take any argument.
+
+**Command**: `qwe tracked`.
+
+**Example**: `qwe tracked`.
 
 ### untrack
 ---

@@ -393,6 +393,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tracked" class="md-nav__link">
+    <span class="md-ellipsis">
+      tracked
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#untrack" class="md-nav__link">
+    <span class="md-ellipsis">
+      untrack
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#commit" class="md-nav__link">
     <span class="md-ellipsis">
       commit
@@ -569,6 +587,8 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 <li><code>group-init</code> - Initiates a group in a qwe repository</li>
 <li><code>groups</code> - Shows all the groups in the qwe repository</li>
 <li><code>track</code> - Tracks a file</li>
+<li><code>tracked</code> - Lists all the tracked files</li>
+<li><code>untrack</code> - Stops tracking a file individually and in all logical groups</li>
 <li><code>group-track</code> - Tracks a file in a group</li>
 <li><code>list</code> - Lists all the commits of a file</li>
 <li><code>group-list</code> - Lists all commits of a group</li>
@@ -595,6 +615,19 @@ This approach ensures that qwe remains the flexible, non-intrusive file revision
 <p><strong>Arguments</strong>: It takes <code>file-path</code> as the only argument.</p>
 <p><strong>Command</strong>: <code>qwe track [file-path]</code>.</p>
 <p><strong>Example</strong>: <code>qwe track main.go</code>.</p>
+<h3 id="tracked">tracked</h3>
+<hr />
+<p><strong>Description</strong>: <code>tracked</code> command lists all the tracked.</p>
+<p><strong>Arguments</strong>: It doesn't take any argument.</p>
+<p><strong>Command</strong>: <code>qwe tracked</code>.</p>
+<p><strong>Example</strong>: <code>qwe tracked</code>.</p>
+<h3 id="untrack">untrack</h3>
+<hr />
+<p><strong>Description</strong>: <code>untrack</code> stops tracking a file individually and removes it from all
+logical groups. The working file is not deleted or modified.</p>
+<p><strong>Arguments</strong>: It takes <code>file-path</code> as the only argument.</p>
+<p><strong>Command</strong>: <code>qwe untrack [file-path]</code>.</p>
+<p><strong>Example</strong>: <code>qwe untrack main.go</code>.</p>
 <h3 id="commit">commit</h3>
 <hr />
 <p><strong>Description</strong>: <code>commit</code> command commits the changes of a file.</p>
