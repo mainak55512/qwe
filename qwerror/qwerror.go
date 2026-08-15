@@ -61,4 +61,5 @@ var (
 	GrpNameListErr     = new(40, "groups command takes no argument or filepath as the only argument!")
 	BinFileErr         = new(41, "Filetype is not supported yet!")
 	CLIShowFilesErr    = new(42, "tracked command doesn't take any argument!")
+	CLIUntrackErr      = new(43, "untrack command only accepts 'file path' as argument!")
 )
