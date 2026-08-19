@@ -3,6 +3,7 @@ package tracker
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	er "github.com/mainak55512/qwe/qwerror"
@@ -22,9 +23,14 @@ func StopTracking(filePath string) error {
 	}
 
 	fileID := utl.Hasher(filePath)
-	if _, ok := tracker[fileID]; !ok {
+	f, ok := tracker[fileID]
+
+	if !ok {
 		return er.FileNotTracked
 	}
+
+	base_file := f.Base
+	file_versions := f.Versions
 
 	_, groupTracker, err := GetTracker(GroupTrackerType)
 	if err != nil {
@@ -65,6 +71,12 @@ func StopTracking(filePath string) error {
 	}
 	if err := SaveTracker(FileTrackerType, trackerContent); err != nil {
 		return err
+	}
+
+	os.Remove(filepath.Join(QweDir, "_object", base_file))
+
+	for _, fl := range file_versions {
+		os.Remove(filepath.Join(QweDir, "_object", fl.UID))
 	}
 
 	fmt.Println("Stopped tracking", filePath)
