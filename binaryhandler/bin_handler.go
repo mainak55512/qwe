@@ -9,6 +9,7 @@ import (
 	utl "github.com/mainak55512/qwe/qweutils"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 	"unicode"
 )
@@ -74,21 +75,53 @@ func CheckBinDiff(file_one, file_two string) (bool, error) {
 
 func RevertBinFile(filePath, fileObjID string) error {
 	commitFile := ".qwe/_object/" + fileObjID
+	targetInfo, err := os.Lstat(filePath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err == nil && targetInfo.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("refusing to restore symlink %s", filePath)
+	}
+
 	src, err := os.Open(commitFile)
 	if err != nil {
 		return err
 	}
-	dest, err := os.Create(filePath)
+	defer src.Close()
+
+	dest, err := os.CreateTemp(filepath.Dir(filePath), ".qwe-revert-*")
 	if err != nil {
 		return err
 	}
+	tmpPath := dest.Name()
+	defer os.Remove(tmpPath)
+
+	fileMode := os.FileMode(0600)
+	if targetInfo != nil {
+		fileMode = targetInfo.Mode().Perm()
+	}
+	if err = dest.Chmod(fileMode); err != nil {
+		dest.Close()
+		return err
+	}
 	if _, err = io.Copy(dest, src); err != nil {
+		dest.Close()
 		return err
 	}
-	if err = cp.DecompressFile(filePath); err != nil {
+	if err = dest.Sync(); err != nil {
+		dest.Close()
 		return err
 	}
-	return nil
+	if err = dest.Close(); err != nil {
+		return err
+	}
+	if err = cp.DecompressFile(tmpPath); err != nil {
+		return err
+	}
+	if err = os.Chmod(tmpPath, fileMode); err != nil {
+		return err
+	}
+	return os.Rename(tmpPath, filePath)
 }
 
 func CommitBinFile(filePath, lastCommit string) (string, error) {
